@@ -1,4 +1,5 @@
-﻿using SqliteEditor.ViewModels;
+﻿using SqliteEditor.Plugins;
+using SqliteEditor.ViewModels;
 using SqliteEditor.Views;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace SqliteEditor.Plugins
+namespace SqliteEditor.SkillRowEditPlugins
 {
     public class SkillRowEditPlugin : IRowEditPlugin
     {

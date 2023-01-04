@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:view="clr-namespace:SqliteEditor.Views"
     xmlns:vm="clr-namespace:SqliteEditor.ViewModels"
-    Title="MainWindow"
+    Title="SqliteEditor"
     Width="800"
     Height="450"
     Closed="Window_Closed"
@@ -62,7 +62,7 @@
                 Grid.Column="1"
                 CellEditEnding="DataTableGrid_CellEditEnding"
                 ItemsSource="{Binding DataTable.Value}"
-                SelectedIndex="{Binding SelectedRowIndex.Value}">
+                SelectedItem="{Binding SelectedRow.Value}">
                 <DataGrid.ContextMenu>
                     <ContextMenu ItemsSource="{Binding EditRowMenus}">
                         <ContextMenu.ItemTemplate>

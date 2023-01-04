@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SqliteEditor.Views
+namespace SqliteEditor.SkillRowEditPlugins
 {
     /// <summary>
     /// SkillRowView.xaml の相互作用ロジック

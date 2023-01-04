@@ -1,6 +1,7 @@
 ﻿using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SqliteEditor.Plugins;
+using SqliteEditor.SkillRowEditPlugins;
 using SqliteEditor.Utilities;
 using SqliteEditor.ViewModels;
 using SqliteEditor.Views;
@@ -68,7 +69,7 @@ namespace SqliteEditor
         public ReactiveProperty<DataTable?> SchemaTable { get; } = new ReactiveProperty<DataTable?>();
 
         public ReactiveProperty<int> SelectedTableIndex { get; } = new ReactiveProperty<int>(-1);
-        public ReactiveProperty<int> SelectedRowIndex { get; } = new ReactiveProperty<int>(-1);
+        public ReactiveProperty<DataRowView?> SelectedRow { get; } = new ReactiveProperty<DataRowView?>();
 
         public ReactiveProperty<string> Log { get; } = new ReactiveProperty<string>();
 
@@ -235,7 +236,7 @@ namespace SqliteEditor
             var command = new ReactiveCommand(SelectedTable.Select(x => plugin.CanExecute(x)));
             _ = command.Subscribe(() =>
             {
-                if (SelectedRowIndex.Value < 0)
+                if (SelectedRow.Value is null)
                 {
                     return;
                 }
@@ -244,7 +245,8 @@ namespace SqliteEditor
                 {
                     return;
                 }
-                plugin.ShowEditWindow(table, SelectedRowIndex.Value);
+                var rowIndex = table.DataTable.Rows.IndexOf(SelectedRow.Value.Row);
+                plugin.ShowEditWindow(table, rowIndex);
             }).AddTo(Disposable);
             EditRowMenus.Add(new MenuItemVIewModel(plugin.MenuHeader, command));
         }
