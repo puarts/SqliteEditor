@@ -27,7 +27,8 @@ namespace SqliteEditor
 
         private void Window_Closed(object sender, EventArgs e)
         {
-
+            var vm = (MainViewModel)DataContext;
+            vm.SaveApplicationSettings();
         }
     }
 }

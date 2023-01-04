@@ -1,0 +1,27 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="clr-namespace:SqliteEditor.ViewModels">
+
+    <DataTemplate DataType="{x:Type vm:PathViewModel}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="80" />
+            </Grid.ColumnDefinitions>
+            <TextBox Text="{Binding Path.Value}" />
+            <Button Grid.Column="1" Command="{Binding OpenPathCommand}">開く..</Button>
+            <TextBox
+                Grid.Row="1"
+                Background="LightGray"
+                IsReadOnly="True"
+                Text="{Binding ActualPath.Value}" />
+        </Grid>
+    </DataTemplate>
+
+
+</ResourceDictionary>

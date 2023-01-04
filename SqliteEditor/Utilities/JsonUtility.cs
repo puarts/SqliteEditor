@@ -10,6 +10,25 @@ namespace SqliteEditor.Utilities
 {
     public static class JsonUtility
     {
+        public static T? ReadJson<T>(string path)
+            where T : class
+        {
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            var jsonText = File.ReadAllText(path);
+
+            var deserialized = JsonSerializer.Deserialize<T>(jsonText);
+            if (deserialized == null)
+            {
+                throw new Exception($"\"{path}\" の読み込みに失敗しました。");
+            }
+
+            return deserialized;
+        }
+
         public static string? WriteAsJson<T>(T target, string path)
         {
             var savePath = path;
