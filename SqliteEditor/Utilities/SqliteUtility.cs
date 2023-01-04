@@ -52,6 +52,11 @@ namespace SqliteEditor.Utilities
             }
         }
 
+        public static DataTable GetTableSchema(string dbPath, string tableName)
+        {
+            var sql = $"PRAGMA TABLE_INFO('{tableName}')";
+            return GetTable(dbPath, sql);
+        }
 
         public static DataTable GetTable(string dbPath, string sql)
         {

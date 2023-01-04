@@ -14,11 +14,13 @@ namespace SqliteEditor.ViewModels
         private bool _isDirty = false;
         private DataTable _dirtySourceTable;
         private DataTable _dataTable;
+        private DataTable _schema;
 
-        public TableViewModel(DataTable source)
+        public TableViewModel(DataTable data, DataTable schema)
         {
-            _dataTable = source;
-            _dirtySourceTable = source.Copy();
+            _dataTable = data;
+            _schema = schema;
+            _dirtySourceTable = data.Copy();
         }
 
         public string TableName { get => _dataTable.TableName; }
@@ -27,11 +29,21 @@ namespace SqliteEditor.ViewModels
         {
             get => _dataTable;
         }
+        public DataTable Schema
+        {
+            get => _schema;
+        }
 
         public bool IsDirty
         {
             get => _isDirty;
             set => SetProperty(ref _isDirty, value);
+        }
+
+        public void UpdateDirtySource()
+        {
+            _dirtySourceTable = _dataTable.Copy();
+            IsDirty = false;
         }
 
         public void UpdateDirty()

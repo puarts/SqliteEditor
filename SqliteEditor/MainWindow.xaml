@@ -15,10 +15,17 @@
     <Window.DataContext>
         <local:MainViewModel />
     </Window.DataContext>
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding OverwriteCommand}" Gesture="Ctrl+S" />
+        <KeyBinding Command="{Binding AddRowCommand}" Gesture="Ctrl+N" />
+    </Window.InputBindings>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="ファイル(F)">
-                <MenuItem Command="{Binding OverwriteCommand}" Header="上書き保存" />
+                <MenuItem Command="{Binding OverwriteCommand}" Header="上書き保存(Ctrl+S)" />
+            </MenuItem>
+            <MenuItem Header="編集(E)">
+                <MenuItem Command="{Binding AddRowCommand}" Header="行の追加(Ctrl+N)" />
             </MenuItem>
         </Menu>
         <Grid>
@@ -29,7 +36,8 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
-                <RowDefinition Height="100" />
+                <!--<RowDefinition Height="100" />-->
+                <RowDefinition Height="80" />
             </Grid.RowDefinitions>
 
             <ContentPresenter Grid.ColumnSpan="2" Content="{Binding DatabasePath}" />
@@ -53,7 +61,22 @@
                 Grid.Row="1"
                 Grid.Column="1"
                 CellEditEnding="DataTableGrid_CellEditEnding"
-                ItemsSource="{Binding DataTable.Value}" />
+                ItemsSource="{Binding DataTable.Value}"
+                SelectedIndex="{Binding SelectedRowIndex.Value}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu ItemsSource="{Binding EditRowMenus}">
+                        <ContextMenu.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:MenuItemVIewModel}">
+                                <MenuItem Command="{Binding Command}" Header="{Binding Header}" />
+                            </DataTemplate>
+                        </ContextMenu.ItemTemplate>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+            </DataGrid>
+            <!--<DataGrid
+                Grid.Row="2"
+                Grid.Column="1"
+                ItemsSource="{Binding SchemaTable.Value}" />-->
             <TextBox
                 Grid.Row="2"
                 Grid.ColumnSpan="2"
