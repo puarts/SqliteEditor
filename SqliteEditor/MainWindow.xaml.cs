@@ -20,15 +20,31 @@ namespace SqliteEditor
     /// </summary>
     public partial class MainWindow : Window
     {
+        private bool _isManualEditCommit = false;
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        private MainViewModel ViewModel { get => (MainViewModel)DataContext; }
+
         private void Window_Closed(object sender, EventArgs e)
         {
-            var vm = (MainViewModel)DataContext;
-            vm.SaveApplicationSettings();
+            ViewModel.SaveApplicationSettings();
+        }
+
+        private void DataTableGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (!_isManualEditCommit)
+            {
+                _isManualEditCommit = true;
+                DataGrid grid = (DataGrid)sender;
+                grid.CommitEdit(DataGridEditingUnit.Row, true);
+                _isManualEditCommit = false;
+
+                ViewModel.UpdateSelectedTableDirty();
+            }
         }
     }
 }

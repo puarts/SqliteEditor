@@ -22,34 +22,37 @@ namespace SqliteEditor
         {
             _ = DatabasePath.ActualPath.Subscribe(path =>
             {
-                if (!File.Exists(path))
+                SyncSqliteInfo();
+            }).AddTo(Disposable);
+
+            _ = SelectedTableIndex.Subscribe(index =>
+            {
+                if (index < 0)
                 {
                     return;
                 }
+                DataTable.Value = Tables[index].DataTable;
+            }).AddTo(Disposable);
 
-                TableNames.Clear();
-                foreach (var name in SqliteUtility.EnumerateTableNames(DatabasePath.Path.Value))
-                {
-                    TableNames.Add(name);
-                }
-
-                if (TableNames.Any())
-                {
-                    var tableName = TableNames.First();
-                    var table = SqliteUtility.GetTable(DatabasePath.Path.Value, $"select * from {tableName}");
-                    DataTable.Value = table;
-                }
+            _ = OverwriteCommand.Subscribe(() =>
+            {
+                SaveDirtyTables();
             }).AddTo(Disposable);
 
             LoadApplicationSettings();
-            //DatabasePath.Path.Value = @"F:\trunk\Websites\puarts.com\db\feh-heroes.sqlite3";
         }
 
-        public ObservableCollection<string> TableNames { get; } = new ObservableCollection<string>();
+        public ObservableCollection<TableViewModel> Tables { get; } = new ObservableCollection<TableViewModel>();
 
         public ReactiveProperty<DataTable?> DataTable { get; } = new ReactiveProperty<DataTable?>();
 
+        public ReactiveProperty<int> SelectedTableIndex { get; } = new ReactiveProperty<int>(-1);
+
+        public ReactiveProperty<string> Log { get; } = new ReactiveProperty<string>();
+
         public PathViewModel DatabasePath { get; } = new PathViewModel();
+
+        public ReactiveCommand OverwriteCommand { get; } = new ReactiveCommand();
 
         public static string ApplicationSettingPath
         {
@@ -92,11 +95,57 @@ namespace SqliteEditor
             JsonUtility.WriteAsJson(CreateApplicationSetting(), ApplicationSettingPath);
         }
 
+        public TableViewModel? GetSelectedTableViewModel()
+        {
+            return SelectedTableIndex.Value < 0 ? null : Tables[SelectedTableIndex.Value];
+        }
+
+        public void UpdateSelectedTableDirty()
+        {
+            var tableViewModel = GetSelectedTableViewModel();
+            tableViewModel?.UpdateDirty();
+        }
+
         private ApplicationSetting CreateApplicationSetting()
         {
             var setting = new ApplicationSetting();
             setting.DatabasePath = DatabasePath.ActualPath.Value;
             return setting;
+        }
+
+        public void SaveDirtyTables()
+        {
+            var path = DatabasePath.Path.Value;
+            SqliteUtility.SetTables(path, EnumerateDirtyTables());
+        }
+
+        private IEnumerable<DataTable> EnumerateDirtyTables()
+        {
+            return Tables.Where(x => x.IsDirty).Select(x => x.DataTable);
+        }
+
+        private void WriteLog(string message)
+        {
+            Log.Value += message + "\n";
+        }
+
+        private void SyncSqliteInfo()
+        {
+            var path = DatabasePath.Path.Value;
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            Tables.Clear();
+            foreach (var name in SqliteUtility.EnumerateTableNames(path))
+            {
+                var table = SqliteUtility.GetTable(path, $"select * from {name}");
+                table.TableName = name;
+                Tables.Add(new TableViewModel(table));
+            }
+
+            SelectedTableIndex.Value = Tables.Any() ? 0 : -1;
         }
     }
 }

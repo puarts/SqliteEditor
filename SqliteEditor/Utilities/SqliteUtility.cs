@@ -71,6 +71,14 @@ namespace SqliteEditor.Utilities
             return table;
         }
 
+        public static void SetTables(string path, IEnumerable<DataTable> tables)
+        {
+            foreach (var table in tables)
+            {
+                SqliteUtility.SetTable(path, table.TableName, table);
+            }
+        }
+
         public static DataTable SetTable(string dbPath, string tableName, DataTable table)
         {
             var sqlConnectionSb = new SQLiteConnectionStringBuilder { DataSource = dbPath };
