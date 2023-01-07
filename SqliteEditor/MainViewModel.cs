@@ -1,4 +1,5 @@
-﻿using Reactive.Bindings;
+﻿using Microsoft.Win32;
+using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SqliteEditor.Plugins;
 using SqliteEditor.SkillRowEditPlugins;
@@ -149,6 +150,30 @@ namespace SqliteEditor
             }
 
             WriteLog($"変更内容を保存しました。\"{path}\"");
+        }
+
+        public bool ShowConfirmSavingDialog(Window owner)
+        {
+            if (HasDirtyTable())
+            {
+                var result = MessageBox.Show(owner, "未保存の変更があります。保存しますか？", "変更の保存確認", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Cancel)
+                {
+                    return false;
+                }
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    SaveDirtyTables();
+                }
+            }
+
+            return true;
+        }
+
+        private bool HasDirtyTable()
+        {
+            return Tables.Any(x => x.IsDirty);
         }
 
         private void WriteLog(string message)

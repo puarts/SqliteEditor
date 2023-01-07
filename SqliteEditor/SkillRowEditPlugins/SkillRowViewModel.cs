@@ -64,17 +64,22 @@ namespace SqliteEditor.SkillRowEditPlugins
 
         private void SyncFromSource()
         {
-            Name.Value = (string)_source["name"];
+            Name.Value = GetCellValue("name");
             Sp.Value = _source["sp"].ToString()!;
-            Description.Value = ((string)_source["description"]).Replace("<br/>", "\n");
-            SkillType.Value = EnumUtility.ConvertDisplayNameToEnum<SkillType>((string)_source["type"]);
+            Description.Value = GetCellValue("description").Replace("<br/>", Environment.NewLine);
+            SkillType.Value = EnumUtility.ConvertDisplayNameToEnum<SkillType>(GetCellValue("type"));
+        }
+
+        private string GetCellValue(string columnName)
+        {
+            return _source[columnName] is string str ? str : "";
         }
 
         private void WriteBackToSource()
         {
             _source["name"] = Name.Value;
-            _source["sp"] = long.Parse(Sp.Value);
-            _source["description"] = Description.Value.Replace("\n", "<br/>");
+            _source["sp"] = long.TryParse(Sp.Value, out long sp) ? sp : System.DBNull.Value;
+            _source["description"] = Description.Value.Replace(Environment.NewLine, "<br/>");
             _source["type"] = EnumUtility.ConvertEnumToDisplayName(SkillType.Value);
             _tableViewModel.UpdateDirty();
         }

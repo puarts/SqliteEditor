@@ -84,6 +84,16 @@ namespace SqliteEditor.Utilities
             }
         }
 
+        private static string ConvertSqliteCellValue(object? source)
+        {
+            if (source is null or System.DBNull)
+            {
+                return "null";
+            }
+            var str = source.ToString()!.Replace("'", "''");
+            return $"'{str}'";
+        }
+
         public static DataTable SetTable(string dbPath, string tableName, DataTable table)
         {
             var sqlConnectionSb = new SQLiteConnectionStringBuilder { DataSource = dbPath };
@@ -100,8 +110,8 @@ namespace SqliteEditor.Utilities
 
                         foreach (DataRow row in table.Rows)
                         {
-                            var values = string.Join("\',\'", row.ItemArray); 
-                            sql += $"INSERT INTO {tableName} VALUES('{values}');";
+                            var values = string.Join(",", row.ItemArray.Select(x => ConvertSqliteCellValue(x))); 
+                            sql += $"INSERT INTO {tableName} VALUES({values});";
                         }
 
                         using var command = connection.CreateCommand();

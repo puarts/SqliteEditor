@@ -11,6 +11,7 @@
     Width="800"
     Height="450"
     Closed="Window_Closed"
+    Closing="Window_Closing"
     mc:Ignorable="d">
     <Window.DataContext>
         <local:MainViewModel />

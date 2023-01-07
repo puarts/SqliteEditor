@@ -46,5 +46,14 @@ namespace SqliteEditor
                 ViewModel.UpdateSelectedTableDirty();
             }
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            bool success = ViewModel.ShowConfirmSavingDialog(this);
+            if (!success)
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }
