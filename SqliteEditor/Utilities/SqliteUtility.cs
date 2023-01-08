@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace SqliteEditor.Utilities
 {
@@ -55,10 +56,10 @@ namespace SqliteEditor.Utilities
         public static DataTable GetTableSchema(string dbPath, string tableName)
         {
             var sql = $"PRAGMA TABLE_INFO('{tableName}')";
-            return GetTable(dbPath, sql);
+            return ReadTable(dbPath, sql);
         }
 
-        public static DataTable GetTable(string dbPath, string sql)
+        public static DataTable ReadTable(string dbPath, string sql)
         {
             DataTable table = new();
             var sqlConnectionSb = new SQLiteConnectionStringBuilder { DataSource = dbPath };
@@ -69,18 +70,51 @@ namespace SqliteEditor.Utilities
                 using (SQLiteCommand cmd = connection.CreateCommand())
                 {
                     cmd.CommandText = sql;
-                    SQLiteDataAdapter adapter = new(cmd);
-                    adapter.Fill(table);
+
+                    using SQLiteDataReader reader = cmd.ExecuteReader();
+                    try
+                    {
+                        var columns = reader.GetColumnSchema();
+                        foreach (var column in columns)
+                        {
+                            if (column.DataType is not null)
+                            {
+                                table.Columns.Add(column.ColumnName, column.DataType);
+                            }
+                            else
+                            {
+                                table.Columns.Add(column.ColumnName);
+                            }
+                        }
+                        while (reader.Read())
+                        {
+                            var row = table.NewRow();
+                            List<object?> values = new();
+                            foreach (var column in columns)
+                            {
+                                var cellValue = reader.GetValue(column.ColumnName);
+                                row[column.ColumnName] = cellValue;
+                            }
+                            table.Rows.Add(row);
+                        }
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+
+                    //SQLiteDataAdapter adapter = new(cmd);
+                    //adapter.Fill(table);
                 }
             }
             return table;
         }
 
-        public static void SetTables(string path, IEnumerable<DataTable> tables)
+        public static void WriteTables(string path, IEnumerable<DataTable> tables)
         {
             foreach (var table in tables)
             {
-                SqliteUtility.SetTable(path, table.TableName, table);
+                SqliteUtility.WriteTable(path, table.TableName, table);
             }
         }
 
@@ -90,11 +124,20 @@ namespace SqliteEditor.Utilities
             {
                 return "null";
             }
-            var str = source.ToString()!.Replace("'", "''");
-            return $"'{str}'";
+            string str;
+            if (source is bool boolValue)
+            {
+                // 本当は 1、0にしないといけないけど、自分のDBの互換性のためにtrueにしておく
+                return boolValue ? "'true'" : "null";
+            }
+            else
+            {
+                str = source.ToString()!.Replace("'", "''");
+                return $"'{str}'";
+            }
         }
 
-        public static DataTable SetTable(string dbPath, string tableName, DataTable table)
+        public static DataTable WriteTable(string dbPath, string tableName, DataTable table)
         {
             var sqlConnectionSb = new SQLiteConnectionStringBuilder { DataSource = dbPath };
             using (SQLiteConnection connection = new(sqlConnectionSb.ToString()))

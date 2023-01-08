@@ -1,0 +1,86 @@
+﻿<Window
+    x:Class="SqliteEditor.Plugins.SkillRowEditPlugins.SkillRowEditWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:SqliteEditor.Plugins.SkillRowEditPlugins"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:SqliteEditor.ViewModels"
+    Title="スキル編集"
+    Width="400"
+    Height="250"
+    d:DataContext="{d:DesignInstance local:SkillRowViewModel}"
+    mc:Ignorable="d">
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding UpdateCommand}" Gesture="Ctrl+S" />
+    </Window.InputBindings>
+
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Width" Value="80" />
+        </Style>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="MinWidth" Value="200" />
+            <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer>
+            <StackPanel>
+                <ItemsControl Margin="10" ItemsSource="{Binding RowProperties}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ContentPresenter Content="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ContentPresenter Content="{Binding Description}" />
+                <ContentPresenter Content="{Binding RefineDescription}" />
+                <ContentPresenter Content="{Binding SpecialRefineDescription}" />
+                <CheckBox Content="継承可否" IsChecked="{Binding Inherit.Value}" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock>特効:</TextBlock>
+                    <Button
+                        Width="15"
+                        Height="23"
+                        VerticalAlignment="top"
+                        Command="{Binding AddEffectiveCommand}">
+                        +
+                    </Button>
+                    <Button
+                        Width="15"
+                        Height="23"
+                        VerticalAlignment="top"
+                        Command="{Binding RemoveEffectiveCommand}">
+                        -
+                    </Button>
+                    <ItemsControl ItemsSource="{Binding Effectives}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding Source={x:Static local:SkillRowViewModel.EffectiveTypes}}" SelectedItem="{Binding Value}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <ContentPresenter Content="{Binding HasKillerEffect}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button Command="{Binding UpdateCommand}">更新</Button>
+        </Grid>
+    </Grid>
+</Window>

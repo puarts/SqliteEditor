@@ -12,14 +12,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace SqliteEditor.SkillRowEditPlugins
+namespace SqliteEditor.Plugins.HeroRowEditPlugins
 {
     /// <summary>
-    /// SkillRowEditWindow.xaml の相互作用ロジック
+    /// HeroRowEditWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class SkillRowEditWindow : Window
+    public partial class HeroRowEditWindow : Window
     {
-        public SkillRowEditWindow()
+        public HeroRowEditWindow()
         {
             InitializeComponent();
         }

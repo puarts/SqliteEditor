@@ -19,6 +19,7 @@
     <Window.InputBindings>
         <KeyBinding Command="{Binding OverwriteCommand}" Gesture="Ctrl+S" />
         <KeyBinding Command="{Binding AddRowCommand}" Gesture="Ctrl+N" />
+        <KeyBinding Command="{Binding OpenEditRowWindowCommand}" Gesture="F4" />
     </Window.InputBindings>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
@@ -27,6 +28,7 @@
             </MenuItem>
             <MenuItem Header="編集(E)">
                 <MenuItem Command="{Binding AddRowCommand}" Header="行の追加(Ctrl+N)" />
+                <MenuItem Command="{Binding OpenEditRowWindowCommand}" Header="現在の行を編集(F4)" />
             </MenuItem>
         </Menu>
         <Grid>
@@ -62,6 +64,7 @@
                 Grid.Row="1"
                 Grid.Column="1"
                 CellEditEnding="DataTableGrid_CellEditEnding"
+                ColumnWidth="60"
                 ItemsSource="{Binding DataTable.Value}"
                 SelectedItem="{Binding SelectedRow.Value}">
                 <DataGrid.ContextMenu>

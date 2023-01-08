@@ -23,5 +23,49 @@
         </Grid>
     </DataTemplate>
 
-
+    <DataTemplate DataType="{x:Type vm:LabeledStringViewModel}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                :</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding Value}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LabeledIntStringViewModel}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                :</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding Value}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LabeledStringCollectionViewModel}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                :</TextBlock>
+            <ItemsControl ItemsSource="{Binding}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBox Text="{Binding Value}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LabeledEnumViewModel}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                :</TextBlock>
+            <ComboBox ItemsSource="{Binding EnumValues}" SelectedItem="{Binding Value}" />
+        </StackPanel>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LabeledBoolViewModel}">
+        <CheckBox Content="{Binding Label, Mode=OneWay}" IsChecked="{Binding Value}" />
+    </DataTemplate>
 </ResourceDictionary>

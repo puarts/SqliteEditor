@@ -12,6 +12,9 @@ namespace SqliteEditor.Plugins
     {
         string MenuHeader { get; }
         void ShowEditWindow(TableViewModel tableViewModel, int rowIndex);
+
+        void ResetViewModel(TableViewModel tableViewModel, int rowIndex);
+
         bool CanExecute(TableViewModel tableViewModel);
     }
 }

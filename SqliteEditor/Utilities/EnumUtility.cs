@@ -1,5 +1,4 @@
-﻿using SqliteEditor.SkillRowEditPlugins;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,6 +11,13 @@ namespace SqliteEditor.Utilities
 {
     public static class EnumUtility
     {
+        public static string ConvertEnumToDisplayName(object source)
+        {
+            string internalFormat = source.ToString()!;
+            var displayAttribute = source.GetType().GetField(internalFormat)?.GetCustomAttribute<DisplayAttribute>();
+            return displayAttribute?.Name ?? internalFormat;
+        }
+
         public static string ConvertEnumToDisplayName<TEnum>(TEnum source)
             where TEnum : struct, Enum
         {
@@ -20,24 +26,28 @@ namespace SqliteEditor.Utilities
             return displayAttribute?.Name ?? internalFormat;
         }
 
-        public static TEnum ConvertDisplayNameToEnum<TEnum>(string displayName)
-            where TEnum : struct, Enum
+        public static object ConvertDisplayNameToEnum(Type enumType, string displayName)
         {
-            var type = typeof(TEnum);
-            foreach (string enumName in Enum.GetNames(type))
+            foreach (string enumName in Enum.GetNames(enumType))
             {
-                var displayAttribute = type.GetField(enumName)?.GetCustomAttribute<DisplayAttribute>();
+                var displayAttribute = enumType.GetField(enumName)?.GetCustomAttribute<DisplayAttribute>();
                 if ((displayAttribute is not null && displayAttribute.Name == displayName)
                     || displayName == enumName)
                 {
-                    if (Enum.TryParse(enumName, out TEnum value))
+                    if (Enum.TryParse(enumType, enumName, out object? value))
                     {
-                        return value;
+                        return value ?? throw new Exception();
                     }
                 }
             }
 
             throw new Exception();
+        }
+
+        public static TEnum ConvertDisplayNameToEnum<TEnum>(string displayName)
+            where TEnum : struct, Enum
+        {
+            return (TEnum)ConvertDisplayNameToEnum(typeof(TEnum), displayName);
         }
     }
 }

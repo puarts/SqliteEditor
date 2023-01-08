@@ -49,7 +49,7 @@ namespace SqliteEditorTest
                     }
                 }
 
-                var outputTable = SqliteUtility.GetTable(outputDbPath, "select * from heroes");
+                var outputTable = SqliteUtility.ReadTable(outputDbPath, "select * from heroes");
                 outputTable.Rows.Count.Is(0);
 
                 while (!isConnectionDisposed)
@@ -72,11 +72,11 @@ namespace SqliteEditorTest
                 File.Exists(outputDbPath).IsTrue();
 
                 var query = $"select * from heroes where name like '%{testName}%'";
-                var table = SqliteUtility.GetTable(_testDbPath, query);
+                var table = SqliteUtility.ReadTable(_testDbPath, query);
 
-                SqliteUtility.SetTable(outputDbPath, "heroes", table);
+                SqliteUtility.WriteTable(outputDbPath, "heroes", table);
 
-                var outputTable = SqliteUtility.GetTable(outputDbPath, query);
+                var outputTable = SqliteUtility.ReadTable(outputDbPath, query);
                 outputTable.Rows.Count.Is(actualCount);
                 foreach (DataRow row in outputTable.Rows)
                 {
@@ -91,7 +91,7 @@ namespace SqliteEditorTest
         [InlineData("ƒGƒ“ƒuƒ‰", 2)]
         public void GetTableTest(string testName, int actualCount)
         {
-            var table = SqliteUtility.GetTable(_testDbPath, $"select * from heroes where name like '%{testName}%'");
+            var table = SqliteUtility.ReadTable(_testDbPath, $"select * from heroes where name like '%{testName}%'");
             table.Rows.Count.Is(actualCount);
 
             foreach (DataRow row in table.Rows)

@@ -2,7 +2,6 @@
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using SqliteEditor.Plugins;
-using SqliteEditor.SkillRowEditPlugins;
 using SqliteEditor.Utilities;
 using SqliteEditor.ViewModels;
 using SqliteEditor.Views;
@@ -20,12 +19,15 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Input;
 
 namespace SqliteEditor
 {
     public class MainViewModel : CompositeDisposableBase
     {
-        private List<IRowEditPlugin> _plugins = new List<IRowEditPlugin>();
+        private List<IRowEditPlugin> _plugins = new();
+        private List<ICommand> _openEditWindowCommands = new();
 
         public MainViewModel()
         {
@@ -56,8 +58,25 @@ namespace SqliteEditor
                 AddRowToSelectedTable();
             }).AddTo(Disposable);
 
+            _ = OpenEditRowWindowCommand.Subscribe(() =>
+            {
+                var validCommand = _openEditWindowCommands.FirstOrDefault(x => x.CanExecute(null));
+                if (validCommand is null)
+                {
+                    WriteError($"現在のテーブルを編集できる編集メニューがありません。");
+                    return;
+                }
+                validCommand.Execute(null);
+            }).AddTo(Disposable);
+
+            _ = SelectedRow.Subscribe(rowView =>
+            {
+                ResetEditPluginViewModel(rowView);
+            }).AddTo(Disposable);
+
             LoadApplicationSettings();
-            AddRowEditPlugin(new SkillRowEditPlugin());
+            AddRowEditPlugin(new Plugins.SkillRowEditPlugins.SkillRowEditPlugin());
+            AddRowEditPlugin(new Plugins.HeroRowEditPlugins.HeroRowEditPlugin());
         }
 
         public ObservableCollection<MenuItemVIewModel> EditRowMenus { get; } = new ObservableCollection<MenuItemVIewModel>();
@@ -79,6 +98,7 @@ namespace SqliteEditor
         public ReactiveCommand OverwriteCommand { get; } = new ReactiveCommand();
 
         public ReactiveCommand AddRowCommand { get; } = new ReactiveCommand();
+        public ReactiveCommand OpenEditRowWindowCommand { get; } = new ReactiveCommand();
 
         public static string ApplicationSettingPath
         {
@@ -142,14 +162,19 @@ namespace SqliteEditor
         public void SaveDirtyTables()
         {
             var path = DatabasePath.Path.Value;
-            var dirtyTables = Tables.Where(x => x.IsDirty).ToArray();
-            SqliteUtility.SetTables(path, dirtyTables.Select(x => x.DataTable));
-            foreach (var table in dirtyTables)
-            {
-                table.UpdateDirtySource();
-            }
+            WriteLog($"変更内容を保存しています..\"{path}\"");
 
-            WriteLog($"変更内容を保存しました。\"{path}\"");
+            _ = Task.Run(() =>
+            {
+                var dirtyTables = Tables.Where(x => x.IsDirty).ToArray();
+                SqliteUtility.WriteTables(path, dirtyTables.Select(x => x.DataTable));
+                foreach (var table in dirtyTables)
+                {
+                    table.UpdateDirtySource();
+                }
+
+                WriteLog($"変更内容を保存しました。\"{path}\"");
+            });
         }
 
         public bool ShowConfirmSavingDialog(Window owner)
@@ -179,6 +204,11 @@ namespace SqliteEditor
         private void WriteLog(string message)
         {
             Log.Value += message + "\n";
+        }
+
+        private void WriteError(string message)
+        {
+            WriteLog("エラー:" + message);
         }
 
         private void AddRowToSelectedTable()
@@ -244,7 +274,7 @@ namespace SqliteEditor
             Tables.Clear();
             foreach (var name in SqliteUtility.EnumerateTableNames(path))
             {
-                var table = SqliteUtility.GetTable(path, $"select * from {name}");
+                var table = SqliteUtility.ReadTable(path, $"select * from {name}");
                 table.TableName = name;
 
                 var schemaTable = SqliteUtility.GetTableSchema(path, name);
@@ -255,24 +285,55 @@ namespace SqliteEditor
             WriteLog($"データベースを開きました。\"{path}\"");
         }
 
+        private void ResetEditPluginViewModel(DataRowView? rowView)
+        {
+            if (rowView is null)
+            {
+                return;
+            }
+            var table = GetSelectedTableViewModel();
+            if (table is null)
+            {
+                return;
+            }
+
+            var rowIndex = table.DataTable.Rows.IndexOf(rowView.Row);
+            foreach (var plugin in _plugins)
+            {
+                plugin.ResetViewModel(table, rowIndex);
+            }
+        }
+
         private void AddRowEditPlugin(IRowEditPlugin plugin)
         {
             _plugins.Add(plugin);
             var command = new ReactiveCommand(SelectedTable.Select(x => plugin.CanExecute(x)));
             _ = command.Subscribe(() =>
             {
-                if (SelectedRow.Value is null)
+                try
                 {
-                    return;
+                    if (SelectedRow.Value is null)
+                    {
+                        return;
+                    }
+                    var table = GetSelectedTableViewModel();
+                    if (table is null)
+                    {
+                        return;
+                    }
+                    var rowIndex = table.DataTable.Rows.IndexOf(SelectedRow.Value.Row);
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        plugin.ShowEditWindow(table, rowIndex);
+                    });
                 }
-                var table = GetSelectedTableViewModel();
-                if (table is null)
+                catch (Exception exception)
                 {
-                    return;
+                    WriteError(exception.Message +Environment.NewLine + exception.StackTrace);
                 }
-                var rowIndex = table.DataTable.Rows.IndexOf(SelectedRow.Value.Row);
-                plugin.ShowEditWindow(table, rowIndex);
             }).AddTo(Disposable);
+            _openEditWindowCommands.Add(command);
             EditRowMenus.Add(new MenuItemVIewModel(plugin.MenuHeader, command));
         }
     }

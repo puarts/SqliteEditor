@@ -10,17 +10,16 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SqliteEditor.SkillRowEditPlugins
+namespace SqliteEditor.Plugins.SkillRowEditPlugins
 {
     /// <summary>
-    /// SkillRowView.xaml の相互作用ロジック
+    /// SkillRowEditWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class SkillRowView : UserControl
+    public partial class SkillRowEditWindow : Window
     {
-        public SkillRowView()
+        public SkillRowEditWindow()
         {
             InitializeComponent();
         }
