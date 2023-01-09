@@ -55,5 +55,13 @@ namespace SqliteEditor
                 e.Cancel = true;
             }
         }
+
+        private void RowFilterBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ViewModel.SelectedTable.Value.RowFilter.Value = ((TextBox)sender).Text;
+            }
+        }
     }
 }

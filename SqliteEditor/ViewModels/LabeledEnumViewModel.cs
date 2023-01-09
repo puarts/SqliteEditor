@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace SqliteEditor.ViewModels
 {
@@ -16,6 +17,17 @@ namespace SqliteEditor.ViewModels
             Label = label;
             EnumValues = Enum.GetValues(enumType);
         }
+
+        public LabeledEnumViewModel(Type enumType, string label, object defaultValue)
+            : this(enumType, label)
+        {
+            EnumType = enumType;
+            Label = label;
+            EnumValues = Enum.GetValues(enumType);
+            Value = defaultValue;
+        }
+
+        public TEnum GetEnumValue<TEnum>() => (TEnum)Value;
 
         public Type EnumType { get; }
         public string Label { get; }

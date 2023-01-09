@@ -1,6 +1,10 @@
-﻿using SqliteEditor.Utilities;
+﻿using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
+using SqliteEditor.Extensions;
+using SqliteEditor.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -16,14 +20,53 @@ namespace SqliteEditor.ViewModels
         private DataTable _dataTable;
         private DataTable _schema;
 
-        public TableViewModel(DataTable data, DataTable schema)
+        public TableViewModel(
+            DataTable data, 
+            DataTable schema,
+            Action<string> errorLogAction,
+            MainViewModel mainViewModel)
         {
             _dataTable = data;
             _schema = schema;
             _dirtySourceTable = data.Copy();
+
+            foreach (DataColumn col in _dataTable.Columns)
+            {
+                var columnItem = new ColumnItemViewModel(col.ColumnName);
+                ColumnItems.Add(columnItem);
+
+                _ = columnItem.IsVisible.Subscribe(isVisible =>
+                {
+                    col.ColumnMapping = isVisible ? MappingType.Element : MappingType.Hidden;
+                }).AddTo(Disposable);
+            }
+
+            _ = RowFilter.Subscribe(filter =>
+            {
+                var view = _dataTable.DefaultView;
+                try
+                {
+                    var actualFilter = "";
+                    if (!string.IsNullOrEmpty(filter))
+                    {
+                        actualFilter = mainViewModel.RowFilterMode.GetEnumValue<RowFilterMode>() == RowFilterMode.NameFilter ?
+                            $"name like '%{filter}%'" : filter;
+                    }
+                    view.RowFilter = actualFilter;
+                }
+                catch (Exception exception)
+                {
+                    errorLogAction(exception.Message);
+                    view.RowFilter = "";
+                }
+            }).AddTo(Disposable);
         }
 
         public string TableName { get => _dataTable.TableName; }
+
+        public ObservableCollection<ColumnItemViewModel> ColumnItems { get; } = new ObservableCollection<ColumnItemViewModel>();
+
+        public ReactiveProperty<string?> RowFilter { get; } = new();
 
         public DataTable DataTable
         {

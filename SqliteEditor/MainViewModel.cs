@@ -24,6 +24,12 @@ using System.Windows.Input;
 
 namespace SqliteEditor
 {
+    public enum RowFilterMode
+    {
+        NameFilter,
+        AnyFilter
+    }
+
     public class MainViewModel : CompositeDisposableBase
     {
         private List<IRowEditPlugin> _plugins = new();
@@ -44,7 +50,6 @@ namespace SqliteEditor
                 }
                 var table = Tables[index];
                 SelectedTable.Value = table;
-                DataTable.Value = table.DataTable;
                 SchemaTable.Value = table.Schema;
             }).AddTo(Disposable);
 
@@ -79,13 +84,14 @@ namespace SqliteEditor
             AddRowEditPlugin(new Plugins.HeroRowEditPlugins.HeroRowEditPlugin());
         }
 
+        public LabeledEnumViewModel RowFilterMode { get; } = new(typeof(RowFilterMode), "フィルターモード", SqliteEditor.RowFilterMode.NameFilter);
+
         public ObservableCollection<MenuItemVIewModel> EditRowMenus { get; } = new ObservableCollection<MenuItemVIewModel>();
 
-        private ReactiveProperty<TableViewModel> SelectedTable { get; } = new ReactiveProperty<TableViewModel>();
+        public ReactiveProperty<TableViewModel> SelectedTable { get; } = new ReactiveProperty<TableViewModel>();
 
         public ObservableCollection<TableViewModel> Tables { get; } = new ObservableCollection<TableViewModel>();
 
-        public ReactiveProperty<DataTable?> DataTable { get; } = new ReactiveProperty<DataTable?>();
         public ReactiveProperty<DataTable?> SchemaTable { get; } = new ReactiveProperty<DataTable?>();
 
         public ReactiveProperty<int> SelectedTableIndex { get; } = new ReactiveProperty<int>(-1);
@@ -278,7 +284,7 @@ namespace SqliteEditor
                 table.TableName = name;
 
                 var schemaTable = SqliteUtility.GetTableSchema(path, name);
-                Tables.Add(new TableViewModel(table, schemaTable));
+                Tables.Add(new TableViewModel(table, schemaTable, WriteError, this));
             }
 
             SelectedTableIndex.Value = Tables.Any() ? 0 : -1;

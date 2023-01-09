@@ -40,10 +40,40 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <!--<RowDefinition Height="100" />-->
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="80" />
             </Grid.RowDefinitions>
 
-            <ContentPresenter Grid.ColumnSpan="2" Content="{Binding DatabasePath}" />
+            <Grid Grid.ColumnSpan="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <!--  列を非表示にする手段がない  -->
+                <!--<StackPanel Orientation="Horizontal">
+                    <ItemsControl ItemsSource="{Binding SelectedTable.Value.ColumnItems}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ColumnItemViewModel}">
+                                <CheckBox Content="{Binding ColumnName}" IsChecked="{Binding IsVisible.Value}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>-->
+                <StackPanel Orientation="Horizontal">
+                    <ContentPresenter Content="{Binding RowFilterMode}" />
+                </StackPanel>
+                <TextBox
+                    Name="RowFilterBox"
+                    Grid.Row="1"
+                    AcceptsReturn="False"
+                    KeyDown="RowFilterBox_KeyDown"
+                    Text="{Binding SelectedTable.Value.RowFilter.Value}" />
+            </Grid>
             <ListView
                 Grid.Row="1"
                 Grid.Column="0"
@@ -63,9 +93,10 @@
                 x:Name="DataTableGrid"
                 Grid.Row="1"
                 Grid.Column="1"
+                AutoGenerateColumns="True"
                 CellEditEnding="DataTableGrid_CellEditEnding"
                 ColumnWidth="60"
-                ItemsSource="{Binding DataTable.Value}"
+                ItemsSource="{Binding SelectedTable.Value.DataTable.DefaultView}"
                 SelectedItem="{Binding SelectedRow.Value}">
                 <DataGrid.ContextMenu>
                     <ContextMenu ItemsSource="{Binding EditRowMenus}">
@@ -77,12 +108,17 @@
                     </ContextMenu>
                 </DataGrid.ContextMenu>
             </DataGrid>
+            <ContentPresenter
+                Grid.Row="2"
+                Grid.ColumnSpan="2"
+                Content="{Binding DatabasePath}" />
+
             <!--<DataGrid
                 Grid.Row="2"
                 Grid.Column="1"
                 ItemsSource="{Binding SchemaTable.Value}" />-->
             <TextBox
-                Grid.Row="2"
+                Grid.Row="3"
                 Grid.ColumnSpan="2"
                 Text="{Binding Log.Value}" />
         </Grid>

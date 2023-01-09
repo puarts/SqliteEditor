@@ -81,7 +81,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         DragonStone,
         [Display(Name = "獣")]
         Beast,
-        [Display(Name = "赤魔")]
+        [Display(Name = "赤魔法")]
         RedTome,
         [Display(Name = "青魔法")]
         BlueTome,
