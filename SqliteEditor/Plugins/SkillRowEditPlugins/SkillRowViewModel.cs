@@ -116,7 +116,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
 
         public LabeledStringViewModel Name { get; } = new("名前");
         public LabeledStringViewModel EnglishName { get; } = new("英語名");
-        public LabeledStringViewModel MustLearn { get; } = new("下位スキル");
+        public LabeledStringCollectionViewModel MustLearn { get; } = new("下位スキル");
         public LabeledStringViewModel ReleaseDate { get; } = new("リリース日");
         public ReactiveProperty<bool?> Inherit { get; } = new();
         public LabeledStringViewModel Description { get; } = new("説明");
@@ -143,12 +143,15 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 { "english_name", EnglishName },
                 { "must_learn", MustLearn },
                 { "release_date", ReleaseDate },
+                { "refined_date", new LabeledStringViewModel("錬成日") },
                 { "type", SkillType },
                 { "weapon_type", new LabeledEnumViewModel(typeof(WeaponType), "武器種") },
                 { "sp", Sp },
                 { "count", Count },
                 { "might", Might },
                 { "might_refine", MightRefine },
+                { "can_status_refine", new LabeledBoolViewModel("ステータス錬成") },
+                { "special_refine_hp", new LabeledIntStringViewModel("特殊錬成後のHP+") },
             });
         }
 
@@ -176,7 +179,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
             WriteToCell("refine_description", ConvertToDBDescription(RefineDescription.Value));
             WriteToCell("special_refine_description", ConvertToDBDescription(SpecialRefineDescription.Value));
             WriteToCell("effective", ConvertToString(Effectives.Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value))));
-            WriteToCell("cooldown_count", HasKillerEffect.Value ? "-1" : DBNull.Value);
+            WriteToCell("cooldown_count", HasKillerEffect.Value ?? false ? "-1" : DBNull.Value);
         }
     }
 }

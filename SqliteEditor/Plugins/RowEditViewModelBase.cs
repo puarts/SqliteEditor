@@ -75,6 +75,9 @@ namespace SqliteEditor.Plugins
                     case LabeledIntStringViewModel cast:
                         cast.Value = GetIntValueAsString(prop.Key);
                         break;
+                    case LabeledBoolViewModel cast:
+                        cast.Value = _source[prop.Key] is DBNull ? null : (bool?)_source[prop.Key];
+                        break;
                     default:
                         break;
                 }
@@ -115,6 +118,9 @@ namespace SqliteEditor.Plugins
                     case LabeledIntStringViewModel cast:
                         WriteToCell(prop.Key, ConvertStringToInt64DBValue(cast.Value));
                         break;
+                    case LabeledBoolViewModel cast:
+                        WriteToCell(prop.Key, ConvertBoolValueToCellValue(cast.Value));
+                        break;
                     default:
                         break;
                 }
@@ -140,6 +146,15 @@ namespace SqliteEditor.Plugins
         protected string ConvertToDBDescription(string value)
         {
             return value.Replace(" ", "").Replace(Environment.NewLine, "<br/>"); ;
+        }
+
+        private static object? ConvertBoolValueToCellValue(bool? value)
+        {
+            if (value != null && value.Value)
+            {
+                return "true";
+            }
+            return null;
         }
 
         protected static object? ConvertStringToInt64DBValue(string value)

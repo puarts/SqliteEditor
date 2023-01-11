@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledBoolViewModel : ReactiveProperty<bool>
+    public class LabeledBoolViewModel : ReactiveProperty<bool?>
     {
         public LabeledBoolViewModel(string label)
         {

@@ -189,6 +189,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
             Illustrators.AddNewItemsWhile(() => Illustrators.Count < 2);
             VoiceActors.AddNewItemsWhile(() => VoiceActors.Count < 2);
             Skills.AddNewItemsWhile(() => Skills.Count < 6);
+            Sex.AddNewItemsWhile(() => Sex.Count < 2);
         }
         public LabeledStringViewModel Name { get; } = new("名前");
         public LabeledStringCollectionViewModel PureNames { get; } = new("純粋名");
@@ -201,7 +202,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         public LabeledEnumViewModel Color { get; } = new LabeledEnumViewModel(typeof(ColorType), "属性");
         public LabeledEnumViewModel WeaponType { get; } = new LabeledEnumViewModel(typeof(WeaponType), "武器種");
         public LabeledEnumViewModel MoveType { get; } = new LabeledEnumViewModel(typeof(MoveType), "移動種");
-        public LabeledEnumViewModel Sex { get; } = new LabeledEnumViewModel(typeof(SexType), "性別");
+        public LabeledEnumCollectionViewModel Sex { get; } = new(typeof(SexType), "性別");
         
         public LabeledStringViewModel OfficialUrl { get; } = new("URL");
 
@@ -232,6 +233,17 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
                 { "thumb", new LabeledStringViewModel("サムネール") },
                 { "official_url", OfficialUrl },
                 { "internal_id", InternalId },
+                { "hp_5", new LabeledIntStringViewModel("LV40 HP") },
+                { "atk_5", new LabeledIntStringViewModel("LV40 攻") },
+                { "spd_5", new LabeledIntStringViewModel("LV40 速") },
+                { "def_5", new LabeledIntStringViewModel("LV40 守") },
+                { "res_5", new LabeledIntStringViewModel("LV40 魔") },
+                { "hp_5_lv1", new LabeledIntStringViewModel("LV1 HP") },
+                { "atk_5_lv1", new LabeledIntStringViewModel("LV1 攻") },
+                { "spd_5_lv1", new LabeledIntStringViewModel("LV1 速") },
+                { "def_5_lv1", new LabeledIntStringViewModel("LV1 守") },
+                { "res_5_lv1", new LabeledIntStringViewModel("LV1 魔") },
+
             });
         }
 

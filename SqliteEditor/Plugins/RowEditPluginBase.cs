@@ -68,6 +68,11 @@ namespace SqliteEditor.Plugins
                 return;
             }
 
+            if (_window is not null)
+            {
+                return;
+            }
+
             var row = table.DataTable.Rows[rowIndex];
 
             _window = new();
@@ -79,8 +84,11 @@ namespace SqliteEditor.Plugins
 
         private void Window_Closed(object? sender, EventArgs e)
         {
-            _window!.Closed -= Window_Closed;
-            _window = null;
+            if (_window is not null)
+            {
+                _window.Closed -= Window_Closed;
+                _window = null;
+            }
         }
 
         public bool CanExecute(TableViewModel tableViewModel)
