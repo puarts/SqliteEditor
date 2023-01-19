@@ -58,6 +58,19 @@
             </ItemsControl>
         </StackPanel>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LabeledEnumCollectionViewModel}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                :</TextBlock>
+            <ItemsControl ItemsSource="{Binding}" Tag="{Binding .}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ComboBox ItemsSource="{Binding Tag.EnumValues, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" SelectedItem="{Binding Value}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledEnumViewModel}">
         <StackPanel Orientation="Horizontal">
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
@@ -67,5 +80,12 @@
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledBoolViewModel}">
         <CheckBox Content="{Binding Label, Mode=OneWay}" IsChecked="{Binding Value}" />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LabeledDateTimeViewModel}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                :</TextBlock>
+            <DatePicker SelectedDate="{Binding Value}" />
+        </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

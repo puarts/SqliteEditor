@@ -130,6 +130,10 @@ namespace SqliteEditor.Utilities
                 // 本当は 1、0にしないといけないけど、自分のDBの互換性のためにtrueにしておく
                 return boolValue ? "'true'" : "null";
             }
+            else if (source is DateTime dateTime)
+            {
+                return $"'{dateTime.ToString("yyyy-MM-dd")}'";
+            }
             else
             {
                 str = source.ToString()!.Replace("'", "''");

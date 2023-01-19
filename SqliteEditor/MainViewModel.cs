@@ -82,6 +82,7 @@ namespace SqliteEditor
             LoadApplicationSettings();
             AddRowEditPlugin(new Plugins.SkillRowEditPlugins.SkillRowEditPlugin());
             AddRowEditPlugin(new Plugins.HeroRowEditPlugins.HeroRowEditPlugin());
+            AddRowEditPlugin(new Plugins.SummonRowEditPlugins.SummonRowEditPlugin());
         }
 
         public LabeledEnumViewModel RowFilterMode { get; } = new(typeof(RowFilterMode), "フィルターモード", SqliteEditor.RowFilterMode.NameFilter);

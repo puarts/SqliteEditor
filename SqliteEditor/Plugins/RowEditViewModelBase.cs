@@ -70,13 +70,23 @@ namespace SqliteEditor.Plugins
                         cast.Value = EnumUtility.ConvertDisplayNameToEnum(cast.EnumType, GetStringValue(prop.Key));
                         break;
                     case LabeledStringCollectionViewModel cast:
-                        cast.AddRange(ConvertToArray(GetStringValue(prop.Key)).Select(x => new ReactiveProperty<string>(x)));
+                        cast.AddRange(
+                            ConvertToArray(GetStringValue(prop.Key))
+                            .Select(x => new ReactiveProperty<string>(x)));
+                        break;
+                    case LabeledEnumCollectionViewModel cast:
+                        cast.AddRange(
+                            ConvertToArray(GetStringValue(prop.Key))
+                            .Select(x => new ReactiveProperty<object>(EnumUtility.ConvertDisplayNameToEnum(cast.EnumType, x))));
                         break;
                     case LabeledIntStringViewModel cast:
                         cast.Value = GetIntValueAsString(prop.Key);
                         break;
                     case LabeledBoolViewModel cast:
                         cast.Value = _source[prop.Key] is DBNull ? null : (bool?)_source[prop.Key];
+                        break;
+                    case LabeledDateTimeViewModel cast:
+                        cast.Value = _source[prop.Key] is DBNull ? null : (DateTime)_source[prop.Key];
                         break;
                     default:
                         break;
@@ -115,11 +125,22 @@ namespace SqliteEditor.Plugins
                     case LabeledStringCollectionViewModel cast:
                         WriteToCell(prop.Key, ConvertToString(cast.Select(x => x.Value)));
                         break;
+                    case LabeledEnumCollectionViewModel cast:
+                        var value = ConvertToString(cast.Where(x => x != cast.DefaultValue).Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value)));
+                        if (cast.TrimsSqliteArraySeparatorOnBothSide && value is string strValue)
+                        {
+                            value = strValue.Trim('|');
+                        }
+                        WriteToCell(prop.Key, value);
+                        break;
                     case LabeledIntStringViewModel cast:
                         WriteToCell(prop.Key, ConvertStringToInt64DBValue(cast.Value));
                         break;
                     case LabeledBoolViewModel cast:
                         WriteToCell(prop.Key, ConvertBoolValueToCellValue(cast.Value));
+                        break;
+                    case LabeledDateTimeViewModel cast:
+                        WriteToCell(prop.Key, cast.Value is null ? DBNull.Value : cast.Value);
                         break;
                     default:
                         break;
@@ -136,7 +157,7 @@ namespace SqliteEditor.Plugins
 
         protected void WriteToCell(string columnName, object? value)
         {
-            _source[columnName] = value;
+            _source[columnName] = value ?? DBNull.Value;
         }
 
         protected string GetDescription(string columnName)

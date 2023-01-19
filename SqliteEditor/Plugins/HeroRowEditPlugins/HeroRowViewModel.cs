@@ -202,8 +202,9 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         public LabeledEnumViewModel Color { get; } = new LabeledEnumViewModel(typeof(ColorType), "属性");
         public LabeledEnumViewModel WeaponType { get; } = new LabeledEnumViewModel(typeof(WeaponType), "武器種");
         public LabeledEnumViewModel MoveType { get; } = new LabeledEnumViewModel(typeof(MoveType), "移動種");
-        public LabeledEnumCollectionViewModel Sex { get; } = new(typeof(SexType), "性別");
-        
+        public LabeledEnumCollectionViewModel Sex { get; } = new(typeof(SexType), "性別", SexType.None) { TrimsSqliteArraySeparatorOnBothSide = true };
+
+
         public LabeledStringViewModel OfficialUrl { get; } = new("URL");
 
         public LabeledStringCollectionViewModel Illustrators { get; } = new("絵師");

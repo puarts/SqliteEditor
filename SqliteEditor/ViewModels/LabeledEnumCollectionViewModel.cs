@@ -10,10 +10,11 @@ namespace SqliteEditor.ViewModels
 {
     public class LabeledEnumCollectionViewModel : ObservableCollection<ReactiveProperty<object>>
     {
-        public LabeledEnumCollectionViewModel(Type enumType, string label)
+        public LabeledEnumCollectionViewModel(Type enumType, string label, object defaultValue)
         {
             EnumType = enumType;
             Label = label;
+            DefaultValue = defaultValue;
             EnumValues = Enum.GetValues(enumType);
         }
 
@@ -21,14 +22,16 @@ namespace SqliteEditor.ViewModels
         {
             while (condition())
             {
-                var item = new ReactiveProperty<object>();
+                var item = new ReactiveProperty<object>(DefaultValue);
                 Add(item);
             }
         }
 
+        public bool TrimsSqliteArraySeparatorOnBothSide { get; set; } = false;
+
         public Type EnumType { get; }
         public string Label { get; }
-
+        public object DefaultValue { get; }
         public Array EnumValues { get; }
     }
 }

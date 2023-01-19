@@ -112,6 +112,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
             {
                 Effectives.RemoveAt(Effectives.Count - 1);
             }).AddTo(Disposable);
+            MustLearn.AddNewItemsWhile(() => MustLearn.Count < 2);
         }
 
         public LabeledStringViewModel Name { get; } = new("名前");
