@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
@@ -41,18 +42,28 @@ namespace SqliteEditor.ViewModels
                 }).AddTo(Disposable);
             }
 
-            _ = RowFilter.Subscribe(filter =>
+            _ = RowFilter.StartWith("").CombineLatest(RowNameFilter.StartWith("")).Subscribe(args =>
             {
+                var filter = args.First;
+                var nameFilter = args.Second;
                 var view = _dataTable.DefaultView;
                 try
                 {
-                    var actualFilter = "";
+                    List<string> actualFilters = new List<string>();
                     if (!string.IsNullOrEmpty(filter))
                     {
-                        actualFilter = mainViewModel.RowFilterMode.GetEnumValue<RowFilterMode>() == RowFilterMode.NameFilter ?
-                            $"name like '%{filter}%'" : filter;
+                        actualFilters.Add(filter);
                     }
-                    view.RowFilter = actualFilter;
+                    if (!string.IsNullOrEmpty(nameFilter))
+                    {
+                        List<string> nameFilters = new List<string>();
+                        foreach (var name in nameFilter.Split(" ", StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            nameFilters.Add($"name like '%{name}%'");
+                        }
+                        actualFilters.Add("(" + string.Join(" or ", nameFilters) + ")");
+                    }
+                    view.RowFilter = string.Join(" and ", actualFilters);
                 }
                 catch (Exception exception)
                 {
@@ -67,6 +78,7 @@ namespace SqliteEditor.ViewModels
         public ObservableCollection<ColumnItemViewModel> ColumnItems { get; } = new ObservableCollection<ColumnItemViewModel>();
 
         public ReactiveProperty<string?> RowFilter { get; } = new();
+        public ReactiveProperty<string?> RowNameFilter { get; } = new();
 
         public DataTable DataTable
         {

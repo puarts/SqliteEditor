@@ -30,6 +30,9 @@
                 <MenuItem Command="{Binding AddRowCommand}" Header="行の追加(Ctrl+N)" />
                 <MenuItem Command="{Binding OpenEditRowWindowCommand}" Header="現在の行を編集(F4)" />
             </MenuItem>
+            <MenuItem Header="ツール(T)">
+                <MenuItem Command="{Binding OpenInputCsvToolCommand}" Header="CSVからの入力" />
+            </MenuItem>
         </Menu>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -49,6 +52,10 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <!--  列を非表示にする手段がない  -->
                 <!--<StackPanel Orientation="Horizontal">
                     <ItemsControl ItemsSource="{Binding SelectedTable.Value.ColumnItems}">
@@ -64,12 +71,22 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>-->
-                <StackPanel Orientation="Horizontal">
+                <!--<StackPanel Orientation="Horizontal">
                     <ContentPresenter Content="{Binding RowFilterMode}" />
-                </StackPanel>
+                </StackPanel>-->
+                <TextBlock>名前フィルター:</TextBlock>
+                <TextBox
+                    Name="RowFilterBox2"
+                    Grid.Column="1"
+                    AcceptsReturn="False"
+                    KeyDown="RowFilterBox2_KeyDown"
+                    Text="{Binding SelectedTable.Value.RowNameFilter.Value}" />
+
+                <TextBlock Grid.Row="1">任意フィルター:</TextBlock>
                 <TextBox
                     Name="RowFilterBox"
                     Grid.Row="1"
+                    Grid.Column="1"
                     AcceptsReturn="False"
                     KeyDown="RowFilterBox_KeyDown"
                     Text="{Binding SelectedTable.Value.RowFilter.Value}" />

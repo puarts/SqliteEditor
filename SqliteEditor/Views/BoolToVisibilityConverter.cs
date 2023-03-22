@@ -13,9 +13,9 @@ namespace SqliteEditor.Views
     {
         public static BoolToVisibieilityConverter Instance { get; } = new BoolToVisibieilityConverter();
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value ? Visibility.Visible : Visibility.Hidden;
+            return (bool)(value ?? false) ? Visibility.Visible : Visibility.Hidden;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -9,17 +9,16 @@ using System.Windows.Controls;
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledEnumViewModel : ReactiveProperty<object>
+    public abstract class EnumViewModelBase : ReactiveProperty<object>
     {
-        public LabeledEnumViewModel(Type enumType, string label)
+        public EnumViewModelBase(Type enumType)
         {
             EnumType = enumType;
-            Label = label;
             EnumValues = Enum.GetValues(enumType);
         }
 
-        public LabeledEnumViewModel(Type enumType, string label, object defaultValue)
-            : this(enumType, label)
+        public EnumViewModelBase(Type enumType, object defaultValue)
+            : this(enumType)
         {
             Value = defaultValue;
         }
@@ -27,8 +26,53 @@ namespace SqliteEditor.ViewModels
         public TEnum GetEnumValue<TEnum>() => (TEnum)Value;
 
         public Type EnumType { get; }
-        public string Label { get; }
 
         public Array EnumValues { get; }
+    }
+
+    public class EnumViewModel : EnumViewModelBase
+    {
+        public EnumViewModel(Type enumType)
+            : base(enumType)
+        {
+        }
+
+        public EnumViewModel(Type enumType, object defaultValue)
+            : base(enumType, defaultValue)
+        {
+            Value = defaultValue;
+            DefaultValue = defaultValue;
+        }
+
+        public object DefaultValue { get; }
+    }
+
+    public class LabeledEnumViewModel : EnumViewModelBase
+    {
+        private readonly Func<bool>? _isVisibleFunc;
+        private bool _isVisible = true;
+
+        public LabeledEnumViewModel(Type enumType, string label, Func<bool>? isVisibleFunc = null)
+            : base(enumType)
+        {
+            Label = label;
+            this._isVisibleFunc = isVisibleFunc;
+        }
+
+        public LabeledEnumViewModel(Type enumType, string label, object defaultValue, Func<bool>? isVisibleFunc = null)
+            : base(enumType, defaultValue)
+        {
+            Label = label;
+            this._isVisibleFunc = isVisibleFunc;
+        }
+
+        public string Label { get; }
+
+        public bool IsVisible { get => _isVisible; }
+
+        public void UpdateVisibility()
+        {
+            _isVisible = _isVisibleFunc?.Invoke() ?? true;
+        }
     }
 }

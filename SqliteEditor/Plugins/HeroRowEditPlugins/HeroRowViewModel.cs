@@ -140,7 +140,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         BlueBeast,
         [Display(Name = "緑獣")]
         GreenBeast,
-        [Display(Name = "無獣")]
+        [Display(Name = "獣")]
         ColorlessBeast,
         [Display(Name = "赤魔")]
         RedTome,
@@ -168,7 +168,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         ColorlessBow,
     }
 
-    public enum RearityType
+    public enum RarityType
     {
         [Display(Name = "")]
         None,
@@ -178,6 +178,84 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Star5_4,
         [Display(Name = "星4|星3")]
         Star4_3,
+    }
+
+    public enum DuelType
+    {
+        [Display(Name = "")]
+        None,
+        [Display(Name = "死闘200")]
+        Duel200,
+        [Display(Name = "死闘195")]
+        Duel195,
+        [Display(Name = "死闘190")]
+        Duel190,
+        [Display(Name = "死闘185")]
+        Duel185,
+        [Display(Name = "死闘180")]
+        Duel180,
+    }
+
+    public enum SpecialType
+    {
+        [Display(Name = "")]
+        None,
+        [Display(Name = "比翼")]
+        Duo,
+        [Display(Name = "双界")]
+        Resonant,
+        [Display(Name = "伝承火")]
+        LegendFire,
+        [Display(Name = "伝承水")]
+        LegendWater,
+        [Display(Name = "伝承風")]
+        LegendWind,
+        [Display(Name = "伝承地")]
+        LegendEarth,
+        [Display(Name = "神階光")]
+        MythicLight,
+        [Display(Name = "神階闇")]
+        MythicDark,
+        [Display(Name = "神階天")]
+        MythicAstra,
+        [Display(Name = "神階理")]
+        MythicAnima,
+        [Display(Name = "魔器")]
+        Rearmed,
+        [Display(Name = "開花")]
+        Ascended,
+    }
+
+    public enum StatusRevisionType
+    {
+        [Display(Name = "")]
+        None,
+        [Display(Name = "Hp5_Atk3")]
+        Hp5_Atk3,
+        [Display(Name = "Hp5_Spd4")]
+        Hp5_Spd4,
+        [Display(Name = "Hp5_Def5")]
+        Hp5_Def5,
+        [Display(Name = "Hp5_Res5")]
+        Hp5_Res5,
+        [Display(Name = "Hp3_Atk2")]
+        Hp3_Atk2,
+        [Display(Name = "Hp3_Spd3")]
+        Hp3_Spd3,
+        [Display(Name = "Hp3_Def4")]
+        Hp3_Def4,
+        [Display(Name = "Hp3_Res4")]
+        Hp3_Res4,
+    }
+
+    public enum SpecialEffectType
+    {
+        [Display(Name = "")]
+        None,
+        [Display(Name = "ダブル")]
+        PairUp,
+        [Display(Name = "枠追加")]
+        AddSlot,
     }
 
     public class HeroRowViewModel : RowEditViewModelBase
@@ -190,50 +268,122 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
             VoiceActors.AddNewItemsWhile(() => VoiceActors.Count < 2);
             Skills.AddNewItemsWhile(() => Skills.Count < 6);
             Sex.AddNewItemsWhile(() => Sex.Count < 2);
+            Origin.AddNewItemsWhile(() => Origin.Count < 2);
+
+            _ = WeaponType.Subscribe(value =>
+            {
+                Color.Value = WeaponToColor((WeaponType)value);
+            }).AddTo(Disposable);
+
+            _ = HowToGet.Subscribe(value =>
+            {
+                var howToGet = (HowToGetType)value;
+                switch (howToGet)
+                {
+                    case HowToGetType.TempestTrials:
+                        Rarity.Value = RarityType.Star5_4;
+                        break;
+                    case HowToGetType.GrandHeroBattle:
+                        Rarity.Value = RarityType.Star4_3;
+                        break;
+                    default:
+                        break;
+                }
+            }).AddTo(Disposable);
         }
-        public LabeledStringViewModel Name { get; } = new("名前");
+
+        private ColorType WeaponToColor(WeaponType weaponType)
+        {
+            switch (weaponType)
+            {
+                case HeroRowEditPlugins.WeaponType.Sword:
+                case HeroRowEditPlugins.WeaponType.RedDragon:
+                case HeroRowEditPlugins.WeaponType.RedBeast:
+                case HeroRowEditPlugins.WeaponType.RedTome:
+                case HeroRowEditPlugins.WeaponType.RedDagger:
+                case HeroRowEditPlugins.WeaponType.RedBow:
+                    return ColorType.Red;
+                case HeroRowEditPlugins.WeaponType.Lance:
+                case HeroRowEditPlugins.WeaponType.BlueDragon:
+                case HeroRowEditPlugins.WeaponType.BlueBeast:
+                case HeroRowEditPlugins.WeaponType.BlueTome:
+                case HeroRowEditPlugins.WeaponType.BlueDagger:
+                case HeroRowEditPlugins.WeaponType.BlueBow:
+                    return ColorType.Blue;
+                case HeroRowEditPlugins.WeaponType.Axe:
+                case HeroRowEditPlugins.WeaponType.GreenDragon:
+                case HeroRowEditPlugins.WeaponType.GreenBeast:
+                case HeroRowEditPlugins.WeaponType.GreenTome:
+                case HeroRowEditPlugins.WeaponType.GreenDagger:
+                case HeroRowEditPlugins.WeaponType.GreenBow:
+                    return ColorType.Green;
+                case HeroRowEditPlugins.WeaponType.ColorlessBow:
+                case HeroRowEditPlugins.WeaponType.ColorlessDragon:
+                case HeroRowEditPlugins.WeaponType.ColorlessBeast:
+                case HeroRowEditPlugins.WeaponType.ColorlessTome:
+                case HeroRowEditPlugins.WeaponType.ColorlessDagger:
+                case HeroRowEditPlugins.WeaponType.Staff:
+                    return ColorType.Colorless;
+                case HeroRowEditPlugins.WeaponType.None:
+                default:
+                    return ColorType.None;
+            }
+        }
+
         public LabeledStringCollectionViewModel PureNames { get; } = new("純粋名");
         public LabeledStringCollectionViewModel Skills { get; } = new("習得スキル");
-        public LabeledStringViewModel InternalId { get; } = new("内部ID");
-        public LabeledStringViewModel EnglishName { get; } = new("英語名");
-        public LabeledStringViewModel Epithet { get; } = new("称号");
-        public LabeledStringViewModel EnglishEpithet { get; } = new("称号(英語)");
-        public LabeledStringViewModel ReleaseDate { get; } = new("リリース日");
-        public LabeledEnumViewModel Color { get; } = new LabeledEnumViewModel(typeof(ColorType), "属性");
-        public LabeledEnumViewModel WeaponType { get; } = new LabeledEnumViewModel(typeof(WeaponType), "武器種");
-        public LabeledEnumViewModel MoveType { get; } = new LabeledEnumViewModel(typeof(MoveType), "移動種");
-        public LabeledEnumCollectionViewModel Sex { get; } = new(typeof(SexType), "性別", SexType.None) { TrimsSqliteArraySeparatorOnBothSide = true };
-
-
-        public LabeledStringViewModel OfficialUrl { get; } = new("URL");
-
+        public LabeledEnumCollectionViewModel Sex { get; } = new(typeof(SexType), "性別", SexType.None) 
+        {
+            TrimsSqliteArraySeparatorOnBothSide = true 
+        };
         public LabeledStringCollectionViewModel Illustrators { get; } = new("絵師");
         public LabeledStringCollectionViewModel VoiceActors { get; } = new("声優");
 
+        public LabeledIndivisualEnumCollectionViewModel SpecialTypes { get; } = new LabeledIndivisualEnumCollectionViewModel(new EnumViewModel[] 
+        {
+            new(typeof(SpecialType), SpecialType.None),
+            new(typeof(SpecialType), SpecialType.None),
+        }, "特殊タイプ");
+
+        public ObservableCollection<object> AutoBindProperties { get; } = new ObservableCollection<object>();
+
+        public LabeledEnumViewModel Rarity { get; } = new LabeledEnumViewModel(typeof(RarityType), "レアリティ");
+        public LabeledEnumViewModel HowToGet { get; } = new LabeledEnumViewModel(typeof(HowToGetType), "入手法");
+
+        public LabeledEnumCollectionViewModel Origin { get; } = new LabeledEnumCollectionViewModel(typeof(OriginType), "出典", OriginType.None) { TrimsSqliteArraySeparatorOnBothSide = true };
 
         protected override void RegisterProperties()
         {
-            RegisterProperties(new Dictionary<string, object>()
+            var dict = new Dictionary<string, object>()
             {
-                { "name", Name },
+                { "name", new LabeledStringViewModel("名前") },
                 { "pure_name", PureNames },
-                { "epithet", Epithet },
-                { "origin", new LabeledEnumViewModel(typeof(OriginType), "出典") },
-                { "how_to_get", new LabeledEnumViewModel(typeof(HowToGetType), "入手法") },
+                { "epithet", new LabeledStringViewModel("称号") },
+                { "origin", Origin },
+                { "how_to_get", HowToGet },
                 { "type", Color },
                 { "weapon_type", WeaponType },
-                { "move_type", MoveType },
+                { "move_type", new LabeledEnumViewModel(typeof(MoveType), "移動種") },
                 { "sex", Sex },
                 { "skills", Skills },
-                { "rarity3", new LabeledEnumViewModel(typeof(RearityType), "レアリティ") },
-                { "english_name", EnglishName },
-                { "english_epithet", EnglishEpithet },
-                { "release_date", ReleaseDate },
+                { "rarity3", Rarity },
+                { "english_name", new LabeledStringViewModel("英語名") },
+                { "english_epithet", new LabeledStringViewModel("称号(英語)") },
+                { "release_date", new LabeledDateTimeViewModel("リリース日") },
                 { "cv", VoiceActors },
                 { "illustrator", Illustrators },
                 { "thumb", new LabeledStringViewModel("サムネール") },
-                { "official_url", OfficialUrl },
-                { "internal_id", InternalId },
+                { "special_type", new LabeledIndivisualEnumCollectionViewModel(new EnumViewModel[]
+                    {
+                        new(typeof(SpecialType), SpecialType.None),
+                        new(typeof(DuelType), DuelType.None),
+                        new(typeof(SpecialEffectType), SpecialEffectType.None),
+                        new(typeof(StatusRevisionType), StatusRevisionType.None),
+                    }, "特殊タイプ")
+                },
+                { "duo_skill", new LabeledDescriptionViewModel("比翼双界スキル") },
+                { "official_url", new LabeledStringViewModel("URL") },
+                { "internal_id", new LabeledStringViewModel("内部ID") },
                 { "hp_5", new LabeledIntStringViewModel("LV40 HP") },
                 { "atk_5", new LabeledIntStringViewModel("LV40 攻") },
                 { "spd_5", new LabeledIntStringViewModel("LV40 速") },
@@ -244,15 +394,27 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
                 { "spd_5_lv1", new LabeledIntStringViewModel("LV1 速") },
                 { "def_5_lv1", new LabeledIntStringViewModel("LV1 守") },
                 { "res_5_lv1", new LabeledIntStringViewModel("LV1 魔") },
+                { "resplendent", Resplendent },
+                { "resplendent_date", new LabeledDateTimeViewModel("神装リリース日") },
+                { "resplendent_url", new LabeledStringViewModel("神装URL") },
+                { "resplendent_costume", new LabeledStringViewModel("神装衣装") },
+            };
+            RegisterProperties(dict);
 
-            });
+            ResplendentProperties.AddRange(dict.Where(x => x.Key.StartsWith("resplendent_")).Select(x => x.Value));
+
+            AutoBindProperties.AddRange(dict
+                .Where(x => !x.Key.StartsWith("resplendent") && x.Key != "type")
+                .Select(x => x.Value));
         }
+
+        public LabeledEnumViewModel Color { get; } = new LabeledEnumViewModel(typeof(ColorType), "属性");
+        public LabeledEnumViewModel WeaponType { get; } = new LabeledEnumViewModel(typeof(WeaponType), "武器種");
+
+        public LabeledBoolViewModel Resplendent { get; } = new("神装");
+        public ObservableCollection<object> ResplendentProperties { get; } = new();
 
         protected override void SyncFromSourceCore()
-        {
-        }
-
-        protected override void WriteBackToSourceCore()
         {
         }
     }

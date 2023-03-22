@@ -19,7 +19,8 @@ namespace SqliteEditor.Plugins
     {
         private readonly DataRow _source;
         private readonly TableViewModel _tableViewModel;
-        protected readonly Dictionary<string, object> ColumnNameToRowPropertyDict = new();
+        protected readonly Dictionary<string, object> ColumnNameToReadPropertyDict = new();
+        protected readonly Dictionary<string, object> ColumnNameToWritePropertyDict = new();
 
         protected RowEditViewModelBase(DataRow source, TableViewModel tableViewModel)
         {
@@ -45,7 +46,8 @@ namespace SqliteEditor.Plugins
 
         protected void RegisterProp(string columnName, object prop)
         {
-            ColumnNameToRowPropertyDict.Add(columnName, prop);
+            ColumnNameToReadPropertyDict.Add(columnName, prop);
+            ColumnNameToWritePropertyDict.Add(columnName, prop);
             RowProperties.Add(prop);
         }
 
@@ -59,12 +61,15 @@ namespace SqliteEditor.Plugins
 
         private void SyncFromSource()
         {
-            foreach (var prop in ColumnNameToRowPropertyDict)
+            foreach (var prop in ColumnNameToReadPropertyDict)
             {
                 switch (prop.Value)
                 {
                     case LabeledStringViewModel cast:
                         cast.Value = GetStringValue(prop.Key);
+                        break;
+                    case LabeledDescriptionViewModel cast:
+                        cast.Value = GetDescription(prop.Key);
                         break;
                     case LabeledEnumViewModel cast:
                         cast.Value = EnumUtility.ConvertDisplayNameToEnum(cast.EnumType, GetStringValue(prop.Key));
@@ -78,6 +83,21 @@ namespace SqliteEditor.Plugins
                         cast.AddRange(
                             ConvertToArray(GetStringValue(prop.Key))
                             .Select(x => new ReactiveProperty<object>(EnumUtility.ConvertDisplayNameToEnum(cast.EnumType, x))));
+                        break;
+                    case LabeledIndivisualEnumCollectionViewModel cast:
+                        {
+                            var valueArray = ConvertToArray(GetStringValue(prop.Key));
+                            foreach (var value in ConvertToArray(GetStringValue(prop.Key)))
+                            {
+                                var enumViewModel = cast.FindEnumViewModelFromValue(value);
+                                if (enumViewModel is null)
+                                {
+                                    continue;
+                                }
+
+                                enumViewModel.Value = EnumUtility.ConvertDisplayNameToEnum(enumViewModel.EnumType, value);
+                            }
+                        }
                         break;
                     case LabeledIntStringViewModel cast:
                         cast.Value = GetIntValueAsString(prop.Key);
@@ -112,12 +132,15 @@ namespace SqliteEditor.Plugins
 
         private void WriteBackToSource()
         {
-            foreach (var prop in ColumnNameToRowPropertyDict)
+            foreach (var prop in ColumnNameToWritePropertyDict)
             {
                 switch (prop.Value)
                 {
                     case LabeledStringViewModel cast:
                         WriteToCell(prop.Key, cast.Value);
+                        break;
+                    case LabeledDescriptionViewModel cast:
+                        WriteToCell(prop.Key, ConvertToDBDescription(cast.Value));
                         break;
                     case LabeledEnumViewModel cast:
                         WriteToCell(prop.Key, EnumUtility.ConvertEnumToDisplayName(cast.Value));
@@ -126,12 +149,24 @@ namespace SqliteEditor.Plugins
                         WriteToCell(prop.Key, ConvertToString(cast.Select(x => x.Value)));
                         break;
                     case LabeledEnumCollectionViewModel cast:
-                        var value = ConvertToString(cast.Where(x => x != cast.DefaultValue).Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value)));
-                        if (cast.TrimsSqliteArraySeparatorOnBothSide && value is string strValue)
                         {
-                            value = strValue.Trim('|');
+                            var value = ConvertToString(cast.Where(x => x != cast.DefaultValue).Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value)));
+                            if (cast.TrimsSqliteArraySeparatorOnBothSide && value is string strValue)
+                            {
+                                value = strValue.Trim('|');
+                            }
+                            WriteToCell(prop.Key, value);
                         }
-                        WriteToCell(prop.Key, value);
+                        break;
+                    case LabeledIndivisualEnumCollectionViewModel cast:
+                        {
+                            var value = ConvertToString(cast.Where(x => x != x.DefaultValue).Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value)));
+                            if (cast.TrimsSqliteArraySeparatorOnBothSide && value is string strValue)
+                            {
+                                value = strValue.Trim('|');
+                            }
+                            WriteToCell(prop.Key, value);
+                        }
                         break;
                     case LabeledIntStringViewModel cast:
                         WriteToCell(prop.Key, ConvertStringToInt64DBValue(cast.Value));
@@ -166,7 +201,10 @@ namespace SqliteEditor.Plugins
         }
         protected string ConvertToDBDescription(string value)
         {
-            return value.Replace(" ", "").Replace(Environment.NewLine, "<br/>"); ;
+            return value
+                .Replace(" ", "")
+                .Replace("守備魔防", "守備、魔防")
+                .Replace(Environment.NewLine, "<br/>"); ;
         }
 
         private static object? ConvertBoolValueToCellValue(bool? value)

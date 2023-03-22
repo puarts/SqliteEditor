@@ -79,13 +79,18 @@ namespace SqliteEditor
                 ResetEditPluginViewModel(rowView);
             }).AddTo(Disposable);
 
+            _ = OpenInputCsvToolCommand.Subscribe(() =>
+            {
+            }).AddTo(Disposable);
+
             LoadApplicationSettings();
             AddRowEditPlugin(new Plugins.SkillRowEditPlugins.SkillRowEditPlugin());
             AddRowEditPlugin(new Plugins.HeroRowEditPlugins.HeroRowEditPlugin());
             AddRowEditPlugin(new Plugins.SummonRowEditPlugins.SummonRowEditPlugin());
+            AddRowEditPlugin(new Plugins.OriginalCharacterRowEditPlugins.OriginalCharacterRowEditPlugin());
         }
 
-        public LabeledEnumViewModel RowFilterMode { get; } = new(typeof(RowFilterMode), "フィルターモード", SqliteEditor.RowFilterMode.NameFilter);
+        public LabeledEnumViewModel RowFilterMode { get; } = new(typeof(RowFilterMode), "フィルターモード", SqliteEditor.RowFilterMode.AnyFilter);
 
         public ObservableCollection<MenuItemVIewModel> EditRowMenus { get; } = new ObservableCollection<MenuItemVIewModel>();
 
@@ -106,6 +111,8 @@ namespace SqliteEditor
 
         public ReactiveCommand AddRowCommand { get; } = new ReactiveCommand();
         public ReactiveCommand OpenEditRowWindowCommand { get; } = new ReactiveCommand();
+
+        public ReactiveCommand OpenInputCsvToolCommand { get; } = new ReactiveCommand();
 
         public static string ApplicationSettingPath
         {
@@ -281,7 +288,7 @@ namespace SqliteEditor
             Tables.Clear();
             foreach (var name in SqliteUtility.EnumerateTableNames(path))
             {
-                var table = SqliteUtility.ReadTable(path, $"select * from {name}");
+                var table = SqliteUtility.ReadTable(path, $"select * from {name}", (m, e) => WriteError(m + "\n" + e.Message));
                 table.TableName = name;
 
                 var schemaTable = SqliteUtility.GetTableSchema(path, name);

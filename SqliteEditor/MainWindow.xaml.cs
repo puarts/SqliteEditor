@@ -63,5 +63,13 @@ namespace SqliteEditor
                 ViewModel.SelectedTable.Value.RowFilter.Value = ((TextBox)sender).Text;
             }
         }
+
+        private void RowFilterBox2_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ViewModel.SelectedTable.Value.RowNameFilter.Value = ((TextBox)sender).Text;
+            }
+        }
     }
 }

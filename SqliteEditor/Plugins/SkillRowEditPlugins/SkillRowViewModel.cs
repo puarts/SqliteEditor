@@ -62,6 +62,26 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         PassiveC,
         [Display(Name = "聖印")]
         SacredSeal,
+        [Display(Name = "隊長")]
+        Captain,
+    }
+
+    public enum AssistType
+    {
+        [Display(Name = "")]
+        None,
+        [Display(Name = "Refresh")]
+        Refresh,
+        [Display(Name = "Move")]
+        Move,
+        [Display(Name = "Rally")]
+        Rally,
+        [Display(Name = "DonorHeal")]
+        DonorHeal,
+        [Display(Name = "Heal")]
+        Heal,
+        [Display(Name = "Restore")]
+        Restore,
     }
 
 
@@ -104,55 +124,74 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         public SkillRowViewModel(DataRow source, TableViewModel tableViewModel)
             : base(source, tableViewModel)
         {
-            _ = AddEffectiveCommand.Subscribe(() =>
-            {
-                Effectives.Add(new ReactiveProperty<EffectiveType>());
-            }).AddTo(Disposable);
-            _ = RemoveEffectiveCommand.Subscribe(() =>
-            {
-                Effectives.RemoveAt(Effectives.Count - 1);
-            }).AddTo(Disposable);
+            Effectives.AddNewItemsWhile(() => Effectives.Count < 2);
+            InvalidateEffectives.AddNewItemsWhile(() => InvalidateEffectives.Count < 2);
             MustLearn.AddNewItemsWhile(() => MustLearn.Count < 2);
+
+            _ = WeaponType.Subscribe(x =>
+            {
+                if ((SkillRowEditPlugins.SkillType)x != SkillRowEditPlugins.SkillType.None)
+                {
+                    SkillType.Value = SkillRowEditPlugins.SkillType.Weapon;
+                }
+            }).AddTo(Disposable);
+
+            _ = Inherit.Subscribe(x =>
+            {
+                if ((SkillRowEditPlugins.SkillType)SkillType.Value == SkillRowEditPlugins.SkillType.Weapon)
+                {
+                    Sp.Value = x == true ? "300" : "400";
+                }
+            }).AddTo(Disposable);
         }
 
-        public LabeledStringViewModel Name { get; } = new("名前");
-        public LabeledStringViewModel EnglishName { get; } = new("英語名");
         public LabeledStringCollectionViewModel MustLearn { get; } = new("下位スキル");
-        public LabeledStringViewModel ReleaseDate { get; } = new("リリース日");
         public ReactiveProperty<bool?> Inherit { get; } = new();
-        public LabeledStringViewModel Description { get; } = new("説明");
-        public LabeledStringViewModel RefineDescription { get; } = new("説明(錬成)");
-        public LabeledStringViewModel SpecialRefineDescription { get; } = new("説明(特殊錬成)");
         public LabeledIntStringViewModel Sp { get; } = new("SP");
         public LabeledIntStringViewModel Count { get; } = new("奥義カウント");
         public LabeledIntStringViewModel Might { get; } = new("威力");
         public LabeledIntStringViewModel MightRefine { get; } = new("錬成後の威力");
         public LabeledEnumViewModel SkillType { get; } = new(typeof(SkillType), "スキル種");
-        public ObservableCollection<ReactiveProperty<EffectiveType>> Effectives { get; } = new();
+        public LabeledEnumCollectionViewModel Effectives { get; } = new(typeof(EffectiveType), "特効", EffectiveType.None);
+        public LabeledEnumCollectionViewModel InvalidateEffectives { get; } = new(typeof(EffectiveType), "特効無効", EffectiveType.None);
 
         public LabeledBoolViewModel HasKillerEffect { get; } = new("キラー効果");
-
-
-        public ReactiveCommand AddEffectiveCommand { get; } = new ReactiveCommand();
-        public ReactiveCommand RemoveEffectiveCommand { get; } = new ReactiveCommand();
+        public LabeledEnumViewModel WeaponType { get; } = new LabeledEnumViewModel(typeof(WeaponType), "武器種");
 
         protected override void RegisterProperties()
         {
             RegisterProperties(new Dictionary<string, object>()
             {
-                { "name", Name },
-                { "english_name", EnglishName },
+                { "name", new LabeledStringViewModel("名前") },
+                { "english_name", new LabeledStringViewModel("英語名") },
+                { "description", new LabeledDescriptionViewModel("説明") },
+                { "refine_description", new LabeledDescriptionViewModel("説明(錬成)") },
+                { "special_refine_description", new LabeledDescriptionViewModel("説明(特殊錬成)") },
+                { "can_status_refine", new LabeledBoolViewModel("ステータス錬成") },
+                { "special_refine_hp", new LabeledIntStringViewModel("特殊錬成後のHP+") },
                 { "must_learn", MustLearn },
-                { "release_date", ReleaseDate },
-                { "refined_date", new LabeledStringViewModel("錬成日") },
+                { "release_date", new LabeledDateTimeViewModel("リリース日") },
+                { "refined_date", new LabeledDateTimeViewModel("錬成日") },
                 { "type", SkillType },
-                { "weapon_type", new LabeledEnumViewModel(typeof(WeaponType), "武器種") },
+                { "weapon_type", WeaponType },
+                { "assist_type", new LabeledEnumViewModel(typeof(AssistType), "補助種") },
                 { "sp", Sp },
                 { "count", Count },
                 { "might", Might },
                 { "might_refine", MightRefine },
-                { "can_status_refine", new LabeledBoolViewModel("ステータス錬成") },
-                { "special_refine_hp", new LabeledIntStringViewModel("特殊錬成後のHP+") },
+                { "effective", Effectives },
+                { "invalidate_effective", InvalidateEffectives },
+                { "hp", new LabeledIntStringViewModel("HP") },
+                { "atk", new LabeledIntStringViewModel("攻撃") },
+                { "spd", new LabeledIntStringViewModel("速さ") },
+                { "def", new LabeledIntStringViewModel("守備") },
+                { "res", new LabeledIntStringViewModel("魔防") },
+                { "wrathful_staff", new LabeledBoolViewModel("神罰") },
+                { "disable_counter", new LabeledBoolViewModel("反撃不可") },
+                { "all_dist_counter", new LabeledBoolViewModel("全距離反撃") },
+                { "counteratk_count", new LabeledIntStringViewModel("反撃時の攻撃回数") },
+                { "atk_count", new LabeledIntStringViewModel("攻撃回数") },
+
             });
         }
 
@@ -160,15 +199,12 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         {
             var inheritStr = GetStringValue("inherit");
             Inherit.Value = inheritStr == "可" ? true : inheritStr == "不可" ? false : null;
-            Description.Value = GetDescription("description");
-            RefineDescription.Value = GetDescription("refine_description");
-            SpecialRefineDescription.Value = GetDescription("special_refine_description");
 
-            Effectives.Clear();
-            foreach (var value in ConvertToArray(GetStringValue("effective")).Select(x => EnumUtility.ConvertDisplayNameToEnum<EffectiveType>(x)))
-            {
-                Effectives.Add(new ReactiveProperty<EffectiveType>(value));
-            }
+            //Effectives.Clear();
+            //foreach (var value in ConvertToArray(GetStringValue("effective")).Select(x => EnumUtility.ConvertDisplayNameToEnum<EffectiveType>(x)))
+            //{
+            //    Effectives.Add(new ReactiveProperty<EffectiveType>(value));
+            //}
 
             HasKillerEffect.Value = GetIntValueAsString("cooldown_count") == "-1" ? true : false;
         }
@@ -176,10 +212,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         protected override void WriteBackToSourceCore()
         {
             WriteToCell("inherit", Inherit.Value is null ? DBNull.Value : Inherit.Value.Value ? "可" : "不可");
-            WriteToCell("description", ConvertToDBDescription(Description.Value));
-            WriteToCell("refine_description", ConvertToDBDescription(RefineDescription.Value));
-            WriteToCell("special_refine_description", ConvertToDBDescription(SpecialRefineDescription.Value));
-            WriteToCell("effective", ConvertToString(Effectives.Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value))));
+            //WriteToCell("effective", ConvertToString(Effectives.Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value))));
             WriteToCell("cooldown_count", HasKillerEffect.Value ?? false ? "-1" : DBNull.Value);
         }
     }

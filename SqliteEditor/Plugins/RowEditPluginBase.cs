@@ -93,7 +93,7 @@ namespace SqliteEditor.Plugins
 
         public bool CanExecute(TableViewModel tableViewModel)
         {
-            return tableViewModel.TableName == _tableName;
+            return tableViewModel?.TableName == _tableName;
         }
     }
 }

@@ -59,7 +59,7 @@ namespace SqliteEditor.Utilities
             return ReadTable(dbPath, sql);
         }
 
-        public static DataTable ReadTable(string dbPath, string sql)
+        public static DataTable ReadTable(string dbPath, string sql, Action<string, Exception>? errorLogAction = null)
         {
             DataTable table = new();
             var sqlConnectionSb = new SQLiteConnectionStringBuilder { DataSource = dbPath };
@@ -92,8 +92,16 @@ namespace SqliteEditor.Utilities
                             List<object?> values = new();
                             foreach (var column in columns)
                             {
-                                var cellValue = reader.GetValue(column.ColumnName);
-                                row[column.ColumnName] = cellValue;
+                                try
+                                {
+                                    var cellValue = reader.GetValue(column.ColumnName);
+                                    row[column.ColumnName] = cellValue;
+                                }
+                                catch (Exception exception)
+                                {
+                                    row[column.ColumnName] = DBNull.Value;
+                                    errorLogAction?.Invoke($"Failed to get value of {column.ColumnName}({column.DataTypeName})", exception);
+                                }
                             }
                             table.Rows.Add(row);
                         }
