@@ -9,7 +9,7 @@
     xmlns:vm="clr-namespace:SqliteEditor.ViewModels"
     Title="SqliteEditor"
     Width="800"
-    Height="450"
+    Height="800"
     Closed="Window_Closed"
     Closing="Window_Closing"
     mc:Ignorable="d">
@@ -29,6 +29,7 @@
             <MenuItem Header="編集(E)">
                 <MenuItem Command="{Binding AddRowCommand}" Header="行の追加(Ctrl+N)" />
                 <MenuItem Command="{Binding OpenEditRowWindowCommand}" Header="現在の行を編集(F4)" />
+                <MenuItem Command="{Binding UpdateCurrentRecordCommand}" Header="現在の行を保存(Ctrl+R)" />
             </MenuItem>
             <MenuItem Header="ツール(T)">
                 <MenuItem Command="{Binding OpenInputCsvToolCommand}" Header="CSVからの入力" />

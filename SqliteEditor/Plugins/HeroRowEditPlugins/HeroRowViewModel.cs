@@ -26,6 +26,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         ThreeHouses,
         [Display(Name = "ヒーローズ")]
         Heroes,
+        [Display(Name = "外伝")]
+        Gaiden,
         [Display(Name = "Echoes")]
         Echoes,
         [Display(Name = "if")]
@@ -34,8 +36,12 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Awakening,
         [Display(Name = "紋章の謎")]
         MysteryOfTheEmblem,
+        [Display(Name = "新・紋章の謎")]
+        NewMysteryOfTheEmblem,
         [Display(Name = "暗黒竜と光の剣")]
         ShadowDragon,
+        [Display(Name = "新・暗黒竜と光の剣")]
+        NewShadowDragon,
         [Display(Name = "暁の女神")]
         RadiantDawn,
         [Display(Name = "蒼炎の軌跡")]

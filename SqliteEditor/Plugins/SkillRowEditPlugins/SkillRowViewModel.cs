@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace SqliteEditor.Plugins.SkillRowEditPlugins
 {
@@ -143,7 +144,54 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                     Sp.Value = x == true ? "300" : "400";
                 }
             }).AddTo(Disposable);
+
+            _ = Description.Subscribe(value =>
+            {
+                var desc = ConvertToDBDescription(value);
+                if (desc.Contains("奥義が発動しやすい(発動カウント-1)<br/>"))
+                {
+                    HasKillerEffect.Value = true;
+                }
+                if (desc.Contains("杖は他の武器同様のダメージ計算になる<br/>"))
+                {
+                    WrathfullStaff.Value = true;
+                }
+                if (HasStatusAdd(desc, "攻撃"))
+                {
+                    Atk.Value = "3";
+                }
+                if (HasStatusAdd(desc, "速さ"))
+                {
+                    Spd.Value = "3";
+                }
+                if (HasStatusAdd(desc, "守備"))
+                {
+                    Def.Value = "3";
+                }
+                if (HasStatusAdd(desc, "魔防"))
+                {
+                    Res.Value = "3";
+                }
+
+                var effectiveType = typeof(EffectiveType);
+                foreach (var enumValue in Enum.GetValues<EffectiveType>())
+                {
+                    MemberInfo[] memInfo = effectiveType.GetMember(enumValue.ToString());
+                    object[] attributes = memInfo[0].GetCustomAttributes(typeof(DisplayAttribute), false);
+                    var name = ((DisplayAttribute)attributes[0]).Name;
+                    if (HasStatusAdd(desc, $"{name}特効<br/>"))
+                    {
+                        Effectives.SetOrAdd(enumValue);
+                    }
+                }
+            }).AddTo(Disposable);
         }
+
+        private bool HasStatusAdd(string desc, string status)
+        {
+            return desc.StartsWith($"{status}+3<br/") || desc.Contains($"<br/>{status}+3<br/>");
+        }
+
 
         public LabeledStringCollectionViewModel MustLearn { get; } = new("下位スキル");
         public ReactiveProperty<bool?> Inherit { get; } = new();
@@ -157,14 +205,19 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
 
         public LabeledBoolViewModel HasKillerEffect { get; } = new("キラー効果");
         public LabeledEnumViewModel WeaponType { get; } = new LabeledEnumViewModel(typeof(WeaponType), "武器種");
-
+        public LabeledDescriptionViewModel Description { get; } = new LabeledDescriptionViewModel("説明");
+        public LabeledIntStringViewModel Atk { get; } = new LabeledIntStringViewModel("攻撃");
+        public LabeledIntStringViewModel Spd { get; } = new LabeledIntStringViewModel("速さ");
+        public LabeledIntStringViewModel Def { get; } = new LabeledIntStringViewModel("守備");
+        public LabeledIntStringViewModel Res { get; } = new LabeledIntStringViewModel("魔防");
+        public LabeledBoolViewModel WrathfullStaff { get; } = new LabeledBoolViewModel("神罰");
         protected override void RegisterProperties()
         {
             RegisterProperties(new Dictionary<string, object>()
             {
                 { "name", new LabeledStringViewModel("名前") },
                 { "english_name", new LabeledStringViewModel("英語名") },
-                { "description", new LabeledDescriptionViewModel("説明") },
+                { "description", Description },
                 { "refine_description", new LabeledDescriptionViewModel("説明(錬成)") },
                 { "special_refine_description", new LabeledDescriptionViewModel("説明(特殊錬成)") },
                 { "can_status_refine", new LabeledBoolViewModel("ステータス錬成") },
@@ -182,15 +235,17 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 { "effective", Effectives },
                 { "invalidate_effective", InvalidateEffectives },
                 { "hp", new LabeledIntStringViewModel("HP") },
-                { "atk", new LabeledIntStringViewModel("攻撃") },
-                { "spd", new LabeledIntStringViewModel("速さ") },
-                { "def", new LabeledIntStringViewModel("守備") },
-                { "res", new LabeledIntStringViewModel("魔防") },
-                { "wrathful_staff", new LabeledBoolViewModel("神罰") },
+                { "atk", Atk },
+                { "spd", Spd },
+                { "def", Def },
+                { "res", Res },
+                { "wrathful_staff", WrathfullStaff },
                 { "disable_counter", new LabeledBoolViewModel("反撃不可") },
                 { "all_dist_counter", new LabeledBoolViewModel("全距離反撃") },
                 { "counteratk_count", new LabeledIntStringViewModel("反撃時の攻撃回数") },
                 { "atk_count", new LabeledIntStringViewModel("攻撃回数") },
+                { "inheritable_weapon_type", new LabeledStringViewModel("武器制限") },
+                { "inheritable_move_type", new LabeledStringViewModel("移動制限") },
 
             });
         }

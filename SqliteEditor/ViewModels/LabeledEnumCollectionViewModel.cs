@@ -1,4 +1,5 @@
 ﻿using Reactive.Bindings;
+using SqliteEditor.Plugins.SkillRowEditPlugins;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -33,5 +34,25 @@ namespace SqliteEditor.ViewModels
         public string Label { get; }
         public object DefaultValue { get; }
         public Array EnumValues { get; }
+
+
+        public void SetOrAdd(object value)
+        {
+            if (this.Any(x => x.Value.Equals(value)))
+            {
+                return;
+            }
+
+            var emptyItem = this.FirstOrDefault(x => x.Value.Equals(DefaultValue));
+            if (emptyItem is null)
+            {
+                this.Add(new ReactiveProperty<object>(value));
+            }
+            else
+            {
+                int emptyIndex = this.IndexOf(emptyItem);
+                this[emptyIndex].Value = value;
+            }
+        }
     }
 }

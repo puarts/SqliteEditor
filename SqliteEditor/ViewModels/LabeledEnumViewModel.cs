@@ -35,6 +35,7 @@ namespace SqliteEditor.ViewModels
         public EnumViewModel(Type enumType)
             : base(enumType)
         {
+            DefaultValue = System.Enum.GetValues(enumType).GetValue(0) ?? throw new Exception();
         }
 
         public EnumViewModel(Type enumType, object defaultValue)

@@ -30,6 +30,7 @@ namespace SqliteEditor.ViewModels
             _dataTable = data;
             _schema = schema;
             _dirtySourceTable = data.Copy();
+            DatabasePath = mainViewModel.DatabasePath.ActualPath.Value;
 
             foreach (DataColumn col in _dataTable.Columns)
             {
@@ -72,6 +73,8 @@ namespace SqliteEditor.ViewModels
                 }
             }).AddTo(Disposable);
         }
+
+        public string DatabasePath { get; }
 
         public string TableName { get => _dataTable.TableName; }
 

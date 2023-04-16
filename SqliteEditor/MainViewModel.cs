@@ -74,6 +74,19 @@ namespace SqliteEditor
                 validCommand.Execute(null);
             }).AddTo(Disposable);
 
+            _ = UpdateCurrentRecordCommand.Subscribe(() =>
+            {
+                var rowView = SelectedRow.Value;
+                if (rowView is null) return;
+
+                var selectedTable = SelectedTable.Value;
+                SqliteUtility.UpdateRecord(
+                    DatabasePath.ActualPath.Value,
+                    selectedTable.TableName,
+                    rowView.Row,
+                    selectedTable.Schema);
+            }).AddTo(Disposable);
+
             _ = SelectedRow.Subscribe(rowView =>
             {
                 ResetEditPluginViewModel(rowView);
@@ -111,6 +124,7 @@ namespace SqliteEditor
 
         public ReactiveCommand AddRowCommand { get; } = new ReactiveCommand();
         public ReactiveCommand OpenEditRowWindowCommand { get; } = new ReactiveCommand();
+        public ReactiveCommand UpdateCurrentRecordCommand { get; } = new ReactiveCommand();
 
         public ReactiveCommand OpenInputCsvToolCommand { get; } = new ReactiveCommand();
 

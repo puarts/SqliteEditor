@@ -29,6 +29,7 @@ namespace SqliteEditor.Plugins
             _ = UpdateCommand.Subscribe(() =>
             {
                 WriteBackToSource();
+                //UpdateRecord();
             }).AddTo(Disposable);
 
             RegisterProperties();
@@ -103,7 +104,12 @@ namespace SqliteEditor.Plugins
                         cast.Value = GetIntValueAsString(prop.Key);
                         break;
                     case LabeledBoolViewModel cast:
-                        cast.Value = _source[prop.Key] is DBNull ? null : (bool?)_source[prop.Key];
+                        {
+                            var sourceValue = _source[prop.Key];
+                            cast.Value = sourceValue is DBNull or null ? null
+                                : sourceValue is string sourceStrValue ? string.IsNullOrEmpty(sourceStrValue) ? null : bool.Parse(sourceStrValue)
+                                : (bool?)sourceValue;
+                        }
                         break;
                     case LabeledDateTimeViewModel cast:
                         cast.Value = _source[prop.Key] is DBNull ? null : (DateTime)_source[prop.Key];
@@ -128,6 +134,15 @@ namespace SqliteEditor.Plugins
         protected string GetIntValueAsString(string columnName)
         {
             return _source[columnName].ToString()!;
+        }
+
+        private void UpdateRecord()
+        {
+            SqliteUtility.UpdateRecord(
+                _tableViewModel.DatabasePath,
+                _tableViewModel.TableName,
+                _source,
+                _tableViewModel.Schema);
         }
 
         private void WriteBackToSource()
@@ -204,6 +219,12 @@ namespace SqliteEditor.Plugins
             return value
                 .Replace(" ", "")
                 .Replace("守備魔防", "守備、魔防")
+                .Replace("〇", "○")
+                .Replace("－", "-")
+                .Replace("＋", "+")
+                .Replace("x", "×")
+                .Replace("（", "(")
+                .Replace("）", ")")
                 .Replace(Environment.NewLine, "<br/>"); ;
         }
 

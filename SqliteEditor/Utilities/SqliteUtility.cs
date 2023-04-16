@@ -30,6 +30,22 @@ namespace SqliteEditor.Utilities
             //MessageBox.Show($"更新されたレコード数は {value} です。");
         }
 
+        public static void UpdateRecord(string dbPath, string tableName, DataRow row, DataTable schema)
+        {
+            var cols = string.Join(",", EnumerateColumnNames(schema));
+            var values = string.Join(",", row.ItemArray.Select(x => ConvertSqliteCellValue(x)));
+            var sql = $"UPDATE {tableName} set ({cols}) = ({values});";
+            SqliteUtility.ExecuteNonQuery(dbPath, sql);
+        }
+
+        public static IEnumerable<string> EnumerateColumnNames(DataTable schema)
+        {
+            foreach (DataRow row in schema.Rows)
+            {
+                yield return (string)(row.ItemArray[1] ?? throw new Exception());
+            }
+        }
+
         public static IEnumerable<string> EnumerateTableNames(string dbPath)
         {
             string ListTableSql = $"SELECT name FROM sqlite_master WHERE type = 'table'";
