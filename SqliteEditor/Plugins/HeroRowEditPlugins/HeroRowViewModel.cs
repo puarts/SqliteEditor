@@ -116,6 +116,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         MythicHero,
         [Display(Name = "魔器英雄")]
         RearmedHero,
+        [Display(Name = "響心英雄")]
+        AttunedHero,
         [Display(Name = "特務機関")]
         OrderOfHeroes,
     }
@@ -228,6 +230,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         MythicAnima,
         [Display(Name = "魔器")]
         Rearmed,
+        [Display(Name = "響心")]
+        Attuned,
         [Display(Name = "開花")]
         Ascended,
     }
@@ -388,6 +392,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
                     }, "特殊タイプ")
                 },
                 { "duo_skill", new LabeledDescriptionViewModel("比翼双界スキル") },
+                { "description", new LabeledDescriptionViewModel("概要") },
                 { "official_url", new LabeledStringViewModel("URL") },
                 { "internal_id", new LabeledStringViewModel("内部ID") },
                 { "hp_5", new LabeledIntStringViewModel("LV40 HP") },

@@ -1,5 +1,6 @@
 ﻿using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using SqliteEditor.Extensions;
 using SqliteEditor.Utilities;
 using SqliteEditor.ViewModels;
 using System;
@@ -61,6 +62,8 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         PassiveB,
         [Display(Name = "パッシブC")]
         PassiveC,
+        [Display(Name = "響心")]
+        Attuned,
         [Display(Name = "聖印")]
         SacredSeal,
         [Display(Name = "隊長")]
@@ -194,7 +197,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
 
 
         public LabeledStringCollectionViewModel MustLearn { get; } = new("下位スキル");
-        public ReactiveProperty<bool?> Inherit { get; } = new();
+        public LabeledBoolViewModel Inherit { get; } = new("継承可否");
         public LabeledIntStringViewModel Sp { get; } = new("SP");
         public LabeledIntStringViewModel Count { get; } = new("奥義カウント");
         public LabeledIntStringViewModel Might { get; } = new("威力");
@@ -211,14 +214,18 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         public LabeledIntStringViewModel Def { get; } = new LabeledIntStringViewModel("守備");
         public LabeledIntStringViewModel Res { get; } = new LabeledIntStringViewModel("魔防");
         public LabeledBoolViewModel WrathfullStaff { get; } = new LabeledBoolViewModel("神罰");
+        public ObservableCollection<object> AutoBindProperties { get; } = new ObservableCollection<object>();
+
+        public LabeledStringViewModel InheritableWeaponType { get; } = new LabeledStringViewModel("武器制限");
         protected override void RegisterProperties()
         {
-            RegisterProperties(new Dictionary<string, object>()
+            var dict = new Dictionary<string, object>()
             {
                 { "name", new LabeledStringViewModel("名前") },
                 { "english_name", new LabeledStringViewModel("英語名") },
                 { "description", Description },
                 { "refine_description", new LabeledDescriptionViewModel("説明(錬成)") },
+                { "refine_description2", new LabeledDescriptionViewModel("説明(錬成2)") },
                 { "special_refine_description", new LabeledDescriptionViewModel("説明(特殊錬成)") },
                 { "can_status_refine", new LabeledBoolViewModel("ステータス錬成") },
                 { "special_refine_hp", new LabeledIntStringViewModel("特殊錬成後のHP+") },
@@ -228,6 +235,8 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 { "type", SkillType },
                 { "weapon_type", WeaponType },
                 { "assist_type", new LabeledEnumViewModel(typeof(AssistType), "補助種") },
+                { "inheritable_weapon_type", InheritableWeaponType },
+                { "inheritable_move_type", new LabeledStringViewModel("移動制限") },
                 { "sp", Sp },
                 { "count", Count },
                 { "might", Might },
@@ -244,10 +253,14 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 { "all_dist_counter", new LabeledBoolViewModel("全距離反撃") },
                 { "counteratk_count", new LabeledIntStringViewModel("反撃時の攻撃回数") },
                 { "atk_count", new LabeledIntStringViewModel("攻撃回数") },
-                { "inheritable_weapon_type", new LabeledStringViewModel("武器制限") },
-                { "inheritable_move_type", new LabeledStringViewModel("移動制限") },
+            };
+            RegisterProperties(dict);
 
-            });
+            var bindProps = dict.Values.ToList();
+            bindProps.Insert(bindProps.IndexOf(InheritableWeaponType), Inherit);
+            bindProps.Add(HasKillerEffect);
+
+            AutoBindProperties.AddRange(bindProps);
         }
 
         protected override void SyncFromSourceCore()
