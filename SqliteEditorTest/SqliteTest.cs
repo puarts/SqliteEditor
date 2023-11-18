@@ -1,3 +1,4 @@
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using SqliteEditor.Utilities;
 using SqliteEditorTest.Utilities;
 using System.Data;
@@ -5,6 +6,7 @@ using System.Data.Common;
 using System.Data.SQLite;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace SqliteEditorTest
 {
@@ -18,44 +20,70 @@ namespace SqliteEditorTest
         }
 
         [Fact]
+        public void UpdateRecordTest()
+        {
+            using var dirCreator = new ScopedDirectoryCreator();
+            var workDir = dirCreator.DirectoryPath;
+            var outputDbPath = Path.Combine(workDir, "output.db");
+            File.Copy(_testDbPath, outputDbPath);
+            File.Exists(outputDbPath).IsTrue();
+
+            var query = $"select * from heroes";
+            var table = SqliteUtility.ReadTable(_testDbPath, query);
+            var schema = SqliteUtility.GetTableSchema(_testDbPath, "heroes");
+
+            {
+                var row = table.Rows[1];
+                row.BeginEdit();
+                row["name"] = "hoge";
+                row.EndEdit();
+                SqliteUtility.UpdateRecordById(outputDbPath, "heroes", row, schema);
+            }
+
+            {
+                var outputTable = SqliteUtility.ReadTable(outputDbPath, query);
+                outputTable.Rows[1]["name"].Is("hoge");
+                outputTable.Rows[2]["name"].IsNot("hoge");
+            }
+        }
+
+        [Fact]
         public void ClearRowsTest()
         {
-            using (var dirCreator = new ScopedDirectoryCreator())
+            using var dirCreator = new ScopedDirectoryCreator();
+            var workDir = dirCreator.DirectoryPath;
+            var outputDbPath = Path.Combine(workDir, "output.db");
+            File.Copy(_testDbPath, outputDbPath);
+            File.Exists(outputDbPath).IsTrue();
+
+            bool isConnectionDisposed = false;
+            using (SQLiteConnection connection = new($"Data Source={outputDbPath};Version=3;"))
             {
-                var workDir = dirCreator.DirectoryPath;
-                var outputDbPath = Path.Combine(workDir, "output.db");
-                File.Copy(_testDbPath, outputDbPath);
-                File.Exists(outputDbPath).IsTrue();
-
-                bool isConnectionDisposed = false;
-                using (SQLiteConnection connection = new($"Data Source={outputDbPath};Version=3;"))
+                connection.Disposed += (sender, e) =>
                 {
-                    connection.Disposed += (sender, e) =>
-                    {
-                        isConnectionDisposed = true;
-                    };
+                    isConnectionDisposed = true;
+                };
 
-                    connection.Open();
-                    try
-                    {
-                        string sql = "delete from heroes";
-
-                        using SQLiteCommand com = new SQLiteCommand(sql, connection);
-                        com.ExecuteNonQuery();
-                    }
-                    finally
-                    {
-                        connection.Close();
-                    }
-                }
-
-                var outputTable = SqliteUtility.ReadTable(outputDbPath, "select * from heroes");
-                outputTable.Rows.Count.Is(0);
-
-                while (!isConnectionDisposed)
+                connection.Open();
+                try
                 {
-                    Thread.Sleep(100);
+                    string sql = "delete from heroes";
+
+                    using SQLiteCommand com = new SQLiteCommand(sql, connection);
+                    com.ExecuteNonQuery();
                 }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            var outputTable = SqliteUtility.ReadTable(outputDbPath, "select * from heroes");
+            outputTable.Rows.Count.Is(0);
+
+            while (!isConnectionDisposed)
+            {
+                Thread.Sleep(100);
             }
         }
 

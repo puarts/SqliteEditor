@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace SqliteEditor.Utilities
 {
@@ -36,6 +37,24 @@ namespace SqliteEditor.Utilities
             var values = string.Join(",", row.ItemArray.Select(x => ConvertSqliteCellValue(x)));
             var sql = $"UPDATE {tableName} set ({cols}) = ({values});";
             SqliteUtility.ExecuteNonQuery(dbPath, sql);
+        }
+
+        public static void UpdateRecordById(
+            string dbPath, string tableName, DataRow row, DataTable schema, string idColumnName = "id")
+        {
+            var cols = string.Join(",", EnumerateColumnNames(schema));
+            var values = string.Join(",", row.ItemArray.Select(x => ConvertSqliteCellValue(x)));
+            int idIndex = FindIndexOfSpecifiedColumn(schema, idColumnName);
+            var id = row.ItemArray[idIndex];
+            var sql = $"UPDATE {tableName} set ({cols}) = ({values}) where {idColumnName}={id};";
+            SqliteUtility.ExecuteNonQuery(dbPath, sql);
+        }
+
+        public static void AddRow(string dbPath, string tableName, DataRow row)
+        {
+            var values = string.Join(",", row.ItemArray.Select(x => ConvertSqliteCellValue(x)));
+            var sql = $"INSERT INTO {tableName} VALUES({values});";
+            ExecuteNonQuery(dbPath, sql);
         }
 
         public static IEnumerable<string> EnumerateColumnNames(DataTable schema)
@@ -164,6 +183,19 @@ namespace SqliteEditor.Utilities
                 return $"'{str}'";
             }
         }
+
+        public static int FindIndexOfSpecifiedColumn(DataTable schema, string columnName)
+        {
+            int index = 0;
+            foreach (DataRow row in schema.Rows)
+            {
+                var colName = (string)(row.ItemArray[1] ?? throw new Exception());
+                if (colName == columnName) return index;
+                ++index;
+            }
+            return -1;
+        }
+
 
         public static DataTable WriteTable(string dbPath, string tableName, DataTable table)
         {

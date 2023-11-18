@@ -11,6 +11,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Xml.Linq;
 
 namespace SqliteEditor.Plugins
@@ -29,7 +30,7 @@ namespace SqliteEditor.Plugins
             _ = UpdateCommand.Subscribe(() =>
             {
                 WriteBackToSource();
-                //UpdateRecord();
+                UpdateRecord();
             }).AddTo(Disposable);
 
             RegisterProperties();
@@ -138,11 +139,14 @@ namespace SqliteEditor.Plugins
 
         private void UpdateRecord()
         {
-            SqliteUtility.UpdateRecord(
-                _tableViewModel.DatabasePath,
-                _tableViewModel.TableName,
-                _source,
-                _tableViewModel.Schema);
+            Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                SqliteUtility.UpdateRecordById(
+                    _tableViewModel.DatabasePath,
+                    _tableViewModel.TableName,
+                    _source,
+                    _tableViewModel.Schema);
+            });
         }
 
         private void WriteBackToSource()
@@ -198,7 +202,7 @@ namespace SqliteEditor.Plugins
             }
 
             WriteBackToSourceCore();
-            _tableViewModel.UpdateDirty();
+            //_tableViewModel.UpdateDirty();
         }
 
         protected virtual void WriteBackToSourceCore()

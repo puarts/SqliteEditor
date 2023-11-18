@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SqliteEditor.Utilities;
+using SqliteEditor.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,7 +45,17 @@ namespace SqliteEditor
                 grid.CommitEdit(DataGridEditingUnit.Row, true);
                 _isManualEditCommit = false;
 
-                ViewModel.UpdateSelectedTableDirty();
+                //ViewModel.UpdateSelectedTableDirty();
+                var tableViewModel = ViewModel.GetSelectedTableViewModel();
+                var row = ViewModel.SelectedRow.Value;
+                if (tableViewModel is not null && row is not null)
+                {;
+                    SqliteUtility.UpdateRecordById(
+                        tableViewModel.DatabasePath,
+                        tableViewModel.TableName,
+                        row.Row,
+                        tableViewModel.Schema);
+                }
             }
         }
 

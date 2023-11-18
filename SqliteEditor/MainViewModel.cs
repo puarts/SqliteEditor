@@ -260,7 +260,11 @@ namespace SqliteEditor
             }
 
             dataTable.Rows.Add(newRow);
-            tableViewModel.UpdateDirty();
+
+            var path = DatabasePath.Path.Value;
+            var selectedTable = SelectedTable.Value;
+            SqliteUtility.AddRow(path, selectedTable.TableName, newRow);
+            //tableViewModel.UpdateDirty();
         }
 
         private static long EstimateNewRowPrimaryKeyValue(DataTable dataTable, string pkColName)
