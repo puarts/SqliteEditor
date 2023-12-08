@@ -8,9 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\SplashScreen.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ReactiveProperty.WPF" Version="8.2.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SplashScreen Include="Resources\SplashScreen.png" />
   </ItemGroup>
 
   <ItemGroup>
