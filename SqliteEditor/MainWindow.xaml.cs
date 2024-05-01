@@ -49,7 +49,7 @@ namespace SqliteEditor
                 var tableViewModel = ViewModel.GetSelectedTableViewModel();
                 var row = ViewModel.SelectedRow.Value;
                 if (tableViewModel is not null && row is not null)
-                {;
+                {
                     SqliteUtility.UpdateRecordById(
                         tableViewModel.DatabasePath,
                         tableViewModel.TableName,
@@ -81,6 +81,69 @@ namespace SqliteEditor
             if (e.Key == Key.Enter)
             {
                 ViewModel.SelectedTable.Value.RowNameFilter.Value = ((TextBox)sender).Text;
+            }
+        }
+
+        private void DataGrid_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true; // デフォルトのショートカットを無効化
+
+                if (sender is DataGrid dataGrid && dataGrid.CurrentCell != null)
+                {
+                    var cell = GetCell(dataGrid.CurrentCell);
+                    if (cell != null)
+                    {
+                        if (!cell.IsEditing)
+                        {
+                            dataGrid.BeginEdit();
+                        }
+                        else
+                        {
+                            dataGrid.CommitEdit();
+                            MoveFocusToNextCell(dataGrid);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static DataGridCell? GetCell(DataGridCellInfo cellInfo)
+        {
+            var cellContent = cellInfo.Column.GetCellContent(cellInfo.Item);
+            if (cellContent != null)
+            {
+                return (DataGridCell)cellContent.Parent;
+            }
+            return null;
+        }
+
+        private static void MoveFocusToNextCell(DataGrid dataGrid)
+        {
+            if (dataGrid.CurrentCell != null)
+            {
+                DataGridCellInfo currentCell = dataGrid.CurrentCell;
+                int columnIndex = dataGrid.CurrentCell.Column.DisplayIndex;
+                int rowIndex = dataGrid.Items.IndexOf(dataGrid.CurrentItem);
+
+                if (columnIndex < dataGrid.Columns.Count - 1)
+                {
+                    DataGridColumn nextColumn = dataGrid.Columns[columnIndex + 1];
+                    DataGridCellInfo nextCell = new DataGridCellInfo(dataGrid.Items[rowIndex], nextColumn);
+                    dataGrid.CurrentCell = nextCell;
+                    dataGrid.ScrollIntoView(dataGrid.Items[rowIndex], nextColumn);
+                }
+                else
+                {
+                    // 右端のセルの場合は次の行の最初のセルにフォーカスを移動する
+                    if (rowIndex < dataGrid.Items.Count - 1)
+                    {
+                        DataGridCellInfo nextCell = new DataGridCellInfo(dataGrid.Items[rowIndex + 1], dataGrid.Columns[0]);
+                        dataGrid.CurrentCell = nextCell;
+                        dataGrid.ScrollIntoView(dataGrid.Items[rowIndex + 1], dataGrid.Columns[0]);
+                    }
+                }
             }
         }
     }

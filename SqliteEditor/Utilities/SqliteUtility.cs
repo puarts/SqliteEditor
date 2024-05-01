@@ -45,6 +45,11 @@ namespace SqliteEditor.Utilities
             var cols = string.Join(",", EnumerateColumnNames(schema));
             var values = string.Join(",", row.ItemArray.Select(x => ConvertSqliteCellValue(x)));
             int idIndex = FindIndexOfSpecifiedColumn(schema, idColumnName);
+            if (idIndex < 0)
+            {
+                return;
+            }
+
             var id = row.ItemArray[idIndex];
             var sql = $"UPDATE {tableName} set ({cols}) = ({values}) where {idColumnName}={id};";
             SqliteUtility.ExecuteNonQuery(dbPath, sql);

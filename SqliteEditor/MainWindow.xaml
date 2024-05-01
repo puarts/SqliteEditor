@@ -115,6 +115,7 @@
                 CellEditEnding="DataTableGrid_CellEditEnding"
                 ColumnWidth="60"
                 ItemsSource="{Binding SelectedTable.Value.DataTable.DefaultView}"
+                PreviewKeyDown="DataGrid_KeyDown"
                 SelectedItem="{Binding SelectedRow.Value}">
                 <DataGrid.ContextMenu>
                     <ContextMenu ItemsSource="{Binding EditRowMenus}">

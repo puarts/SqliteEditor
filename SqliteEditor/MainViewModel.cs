@@ -308,6 +308,12 @@ namespace SqliteEditor
             {
                 var table = SqliteUtility.ReadTable(path, $"select * from {name}", (m, e) => WriteError(m + "\n" + e.Message));
                 table.TableName = name;
+                if (table.Columns.Contains("id"))
+                {
+                    // デフォルトでは新しいものを上に表示したいのでid降順ソート
+                    table.DefaultView.Sort = "id DESC";
+                }
+
 
                 var schemaTable = SqliteUtility.GetTableSchema(path, name);
                 Tables.Add(new TableViewModel(table, schemaTable, WriteError, this));

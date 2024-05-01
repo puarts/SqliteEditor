@@ -60,6 +60,10 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         SharpFEEncore,
         [Display(Name = "エンゲージ")]
         Engage,
+        [Display(Name = "無双")]
+        Warriors,
+        [Display(Name = "無双 風花雪月")]
+        WarriorsThreeHopes,
     }
     public enum SexType
     {
@@ -114,6 +118,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         LegendaryHero,
         [Display(Name = "神階英雄ガチャ")]
         MythicHero,
+        [Display(Name = "紋章士英雄")]
+        EmblemHero,
         [Display(Name = "魔器英雄")]
         RearmedHero,
         [Display(Name = "響心英雄")]
@@ -192,6 +198,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
     {
         [Display(Name = "")]
         None,
+        [Display(Name = "死闘205")]
+        Duel205,
         [Display(Name = "死闘200")]
         Duel200,
         [Display(Name = "死闘195")]
@@ -234,6 +242,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Attuned,
         [Display(Name = "開花")]
         Ascended,
+        [Display(Name = "紋章士")]
+        Emblem,
     }
 
     public enum StatusRevisionType

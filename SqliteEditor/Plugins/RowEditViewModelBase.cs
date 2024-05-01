@@ -216,12 +216,14 @@ namespace SqliteEditor.Plugins
 
         protected string GetDescription(string columnName)
         {
-            return GetStringValue(columnName).Replace("<br/>", Environment.NewLine);
+            return GetStringValue(columnName).Replace("<br>", Environment.NewLine);
         }
         protected string ConvertToDBDescription(string value)
         {
             return value
                 .Replace(" ", "")
+                .Replace("增幅", "増幅")
+                .Replace("擊", "撃")
                 .Replace("守備魔防", "守備、魔防")
                 .Replace("攻撃速さ", "攻撃、速さ")
                 .Replace("〇", "○")
@@ -232,13 +234,15 @@ namespace SqliteEditor.Plugins
                 .Replace("さー", "さ-")
                 .Replace("防ー", "防-")
                 .Replace("Pー", "P-")
+                .Replace("ダメージー", "ダメージ-")
                 .Replace("カウントー", "カウント-")
                 .Replace("量ー", "量-")
                 .Replace("＋", "+")
                 .Replace("x", "×")
                 .Replace("（", "(")
                 .Replace("）", ")")
-                .Replace(Environment.NewLine, "<br/>"); ;
+                .Replace("奥盖", "奥義")
+                .Replace(Environment.NewLine, "<br>"); ;
         }
 
         private static object? ConvertBoolValueToCellValue(bool? value)

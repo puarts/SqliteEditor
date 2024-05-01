@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -140,22 +141,24 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 }
             }).AddTo(Disposable);
 
-            _ = Inherit.Subscribe(x =>
+            _ = Inherit.Subscribe(inherit =>
             {
                 if ((SkillRowEditPlugins.SkillType)SkillType.Value == SkillRowEditPlugins.SkillType.Weapon)
                 {
-                    Sp.Value = x == true ? "300" : "400";
+                    Sp.Value = !inherit.GetValueOrDefault() ? "400" :
+                    Name.Value.EndsWith("+") || Name.Value.StartsWith("魔器・") ? 
+                    "300" : "200";
                 }
             }).AddTo(Disposable);
 
             _ = Description.Subscribe(value =>
             {
                 var desc = ConvertToDBDescription(value);
-                if (desc.Contains("奥義が発動しやすい(発動カウント-1)<br/>"))
+                if (desc.StartsWith("奥義が発動しやすい(発動カウント-1)"))
                 {
                     HasKillerEffect.Value = true;
                 }
-                if (desc.Contains("杖は他の武器同様のダメージ計算になる<br/>"))
+                if (desc.StartsWith("杖は他の武器同様のダメージ計算になる"))
                 {
                     WrathfullStaff.Value = true;
                 }
@@ -182,7 +185,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                     MemberInfo[] memInfo = effectiveType.GetMember(enumValue.ToString());
                     object[] attributes = memInfo[0].GetCustomAttributes(typeof(DisplayAttribute), false);
                     var name = ((DisplayAttribute)attributes[0]).Name;
-                    if (HasStatusAdd(desc, $"{name}特効<br/>"))
+                    if (HasStatusAdd(desc, $"{name}特効<br>"))
                     {
                         Effectives.SetOrAdd(enumValue);
                     }
@@ -192,7 +195,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
 
         private bool HasStatusAdd(string desc, string status)
         {
-            return desc.StartsWith($"{status}+3<br/") || desc.Contains($"<br/>{status}+3<br/>");
+            return desc.StartsWith($"{status}+3<br") || desc.Contains($"<br>{status}+3<br>");
         }
 
 
@@ -217,11 +220,13 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         public ObservableCollection<object> AutoBindProperties { get; } = new ObservableCollection<object>();
 
         public LabeledStringViewModel InheritableWeaponType { get; } = new LabeledStringViewModel("武器制限");
+
+        public LabeledStringViewModel Name { get; } = new LabeledStringViewModel("名前");
         protected override void RegisterProperties()
         {
             var dict = new Dictionary<string, object>()
             {
-                { "name", new LabeledStringViewModel("名前") },
+                { "name", Name },
                 { "english_name", new LabeledStringViewModel("英語名") },
                 { "description", Description },
                 { "refine_description", new LabeledDescriptionViewModel("説明(錬成)") },

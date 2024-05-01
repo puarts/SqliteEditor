@@ -44,6 +44,8 @@ namespace SqliteEditor.Plugins.SummonRowEditPlugins
         Revival,
         [Display(Name = "ω超英雄")]
         OmegaSpecial,
+        [Display(Name = "プレゼント")]
+        Present,
     }
 
     public class SummonRowViewModel : RowEditViewModelBase
