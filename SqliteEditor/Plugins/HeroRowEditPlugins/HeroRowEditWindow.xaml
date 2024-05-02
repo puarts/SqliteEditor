@@ -11,22 +11,11 @@
     Width="400"
     Height="600"
     d:DataContext="{d:DesignInstance local:HeroRowViewModel}"
+    Style="{DynamicResource CustomWindowStyle}"
     mc:Ignorable="d">
     <Window.InputBindings>
         <KeyBinding Command="{Binding UpdateCommand}" Gesture="Ctrl+S" />
     </Window.InputBindings>
-    <Window.Resources>
-        <Style TargetType="{x:Type TextBlock}">
-            <Setter Property="Width" Value="80" />
-        </Style>
-        <Style TargetType="{x:Type TextBox}">
-            <Setter Property="MinWidth" Value="200" />
-            <Setter Property="AcceptsReturn" Value="True" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-
-    </Window.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqliteEditor", "SqliteEditor\SqliteEditor.csproj", "{21B720D4-9212-4B5B-8E12-E8EE30A8E01F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteEditorTest", "SqliteEditorTest\SqliteEditorTest.csproj", "{AAD4240D-5B76-4D77-9E1D-26250413B688}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqliteEditorTest", "SqliteEditorTest\SqliteEditorTest.csproj", "{AAD4240D-5B76-4D77-9E1D-26250413B688}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

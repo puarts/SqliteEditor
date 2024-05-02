@@ -10,6 +10,7 @@
     Width="400"
     Height="600"
     d:DataContext="{d:DesignInstance local:SkillRowViewModel}"
+    Style="{DynamicResource CustomWindowStyle}"
     mc:Ignorable="d">
     <Window.InputBindings>
         <KeyBinding Command="{Binding UpdateCommand}" Gesture="Ctrl+S" />

@@ -16,11 +16,6 @@
             </Grid.ColumnDefinitions>
             <TextBox Text="{Binding Path.Value}" />
             <Button Grid.Column="1" Command="{Binding OpenPathCommand}">開く..</Button>
-            <TextBox
-                Grid.Row="1"
-                Background="LightGray"
-                IsReadOnly="True"
-                Text="{Binding ActualPath.Value}" />
         </Grid>
     </DataTemplate>
 
@@ -58,23 +53,40 @@
         </Grid>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledStringCollectionViewModel}">
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
-                :</TextBlock>
-            <ItemsControl Focusable="False" ItemsSource="{Binding}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <TextBox Text="{Binding Value}" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type vm:LabeledEnumCollectionViewModel}">
-        <StackPanel Orientation="Horizontal">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
                 :</TextBlock>
             <ItemsControl
+                Grid.Column="1"
+                Focusable="False"
+                ItemsSource="{Binding}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <TextBox
+                                AcceptsReturn="True"
+                                Text="{Binding Value}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LabeledEnumCollectionViewModel}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                :</TextBlock>
+            <ItemsControl
+                Grid.Column="1"
                 Focusable="False"
                 ItemsSource="{Binding}"
                 Tag="{Binding .}">
@@ -90,7 +102,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </StackPanel>
+        </Grid>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:EnumViewModel}">
         <ComboBox ItemsSource="{Binding EnumValues}" SelectedItem="{Binding Value}">
@@ -103,10 +115,15 @@
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type vm:LabeledIndivisualEnumCollectionViewModel}">
-        <StackPanel Orientation="Horizontal">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
                 :</TextBlock>
             <ItemsControl
+                Grid.Column="1"
                 Focusable="False"
                 ItemsSource="{Binding}"
                 Tag="{Binding .}">
@@ -116,29 +133,40 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </StackPanel>
+        </Grid>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledEnumViewModel}">
-        <StackPanel Orientation="Horizontal">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
                 :</TextBlock>
-            <ComboBox ItemsSource="{Binding EnumValues}" SelectedItem="{Binding Value}">
+            <ComboBox
+                Grid.Column="1"
+                ItemsSource="{Binding EnumValues}"
+                SelectedItem="{Binding Value}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Converter={x:Static views:EnumDisplayConverter.Instance}}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-        </StackPanel>
+        </Grid>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledBoolViewModel}">
         <CheckBox Content="{Binding Label, Mode=OneWay}" IsChecked="{Binding Value}" />
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledDateTimeViewModel}">
-        <StackPanel Orientation="Horizontal">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
                 :</TextBlock>
-            <DatePicker SelectedDate="{Binding Value}" />
-        </StackPanel>
+            <DatePicker Grid.Column="1" SelectedDate="{Binding Value}" />
+        </Grid>
     </DataTemplate>
 </ResourceDictionary>

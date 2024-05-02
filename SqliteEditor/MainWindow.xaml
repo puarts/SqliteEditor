@@ -12,6 +12,7 @@
     Height="800"
     Closed="Window_Closed"
     Closing="Window_Closing"
+    Style="{DynamicResource CustomWindowStyle}"
     mc:Ignorable="d">
     <Window.DataContext>
         <local:MainViewModel />
@@ -35,7 +36,7 @@
                 <MenuItem Command="{Binding OpenInputCsvToolCommand}" Header="CSVからの入力" />
             </MenuItem>
         </Menu>
-        <Grid>
+        <Grid Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
@@ -48,7 +49,7 @@
                 <RowDefinition Height="80" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.ColumnSpan="2">
+            <Grid Grid.ColumnSpan="2" Margin="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -75,7 +76,7 @@
                 <!--<StackPanel Orientation="Horizontal">
                     <ContentPresenter Content="{Binding RowFilterMode}" />
                 </StackPanel>-->
-                <TextBlock>名前フィルター:</TextBlock>
+                <TextBlock>名前フィルター</TextBlock>
                 <TextBox
                     Name="RowFilterBox2"
                     Grid.Column="1"
@@ -83,7 +84,7 @@
                     KeyDown="RowFilterBox2_KeyDown"
                     Text="{Binding SelectedTable.Value.RowNameFilter.Value}" />
 
-                <TextBlock Grid.Row="1">任意フィルター:</TextBlock>
+                <TextBlock Grid.Row="1">任意フィルター</TextBlock>
                 <TextBox
                     Name="RowFilterBox"
                     Grid.Row="1"
@@ -95,22 +96,21 @@
             <ListView
                 Grid.Row="1"
                 Grid.Column="0"
+                Margin="2"
                 ItemsSource="{Binding Tables}"
                 SelectedIndex="{Binding SelectedTableIndex.Value}"
                 SelectionMode="Single">
-                <ListView.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:TableViewModel}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="*" Visibility="{Binding IsDirty, Converter={x:Static view:BoolToVisibieilityConverter.Instance}}" />
-                            <TextBlock Text="{Binding TableName}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding TableName}" Header="テーブル" />
+                    </GridView>
+                </ListView.View>
             </ListView>
             <DataGrid
                 x:Name="DataTableGrid"
                 Grid.Row="1"
                 Grid.Column="1"
+                Margin="2"
                 AutoGenerateColumns="True"
                 CellEditEnding="DataTableGrid_CellEditEnding"
                 ColumnWidth="60"
@@ -130,6 +130,7 @@
             <ContentPresenter
                 Grid.Row="2"
                 Grid.ColumnSpan="2"
+                Margin="2"
                 Content="{Binding DatabasePath}" />
 
             <!--<DataGrid
@@ -139,6 +140,7 @@
             <TextBox
                 Grid.Row="3"
                 Grid.ColumnSpan="2"
+                Margin="2"
                 Text="{Binding Log.Value}" />
         </Grid>
     </DockPanel>
