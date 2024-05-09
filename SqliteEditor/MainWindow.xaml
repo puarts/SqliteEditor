@@ -33,6 +33,7 @@
                 <MenuItem Command="{Binding UpdateCurrentRecordCommand}" Header="現在の行を保存(Ctrl+R)" />
             </MenuItem>
             <MenuItem Header="ツール(T)">
+                <MenuItem Command="{Binding OpenStringConversionInfoWindowCommand}" Header="文字列置き換え設定" />
                 <MenuItem Command="{Binding OpenInputCsvToolCommand}" Header="CSVからの入力" />
             </MenuItem>
         </Menu>

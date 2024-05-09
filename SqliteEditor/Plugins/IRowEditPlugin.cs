@@ -16,5 +16,7 @@ namespace SqliteEditor.Plugins
         void ResetViewModel(TableViewModel tableViewModel, int rowIndex);
 
         bool CanExecute(TableViewModel tableViewModel);
+
+        void SyncStringConversionInfosFrom(IList<StringConversionInfo> stringConversionInfos);
     }
 }

@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SqliteEditor
 {
-    public class ApplicationSetting
+    public record StringConversionInfo(string Source, string Destination)
     {
-        public string? DatabasePath { get; set; }
+    }
+
+    public record ApplicationSetting(
+        string? DatabasePath,
+        ImmutableList<StringConversionInfo> StringConversionInfos)
+    {
     }
 }

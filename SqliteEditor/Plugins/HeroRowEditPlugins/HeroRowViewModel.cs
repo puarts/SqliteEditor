@@ -140,22 +140,6 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Axe,
         [Display(Name = "杖")]
         Staff,
-        [Display(Name = "赤竜")]
-        RedDragon,
-        [Display(Name = "青竜")]
-        BlueDragon,
-        [Display(Name = "緑竜")]
-        GreenDragon,
-        [Display(Name = "無竜")]
-        ColorlessDragon,
-        [Display(Name = "赤獣")]
-        RedBeast,
-        [Display(Name = "青獣")]
-        BlueBeast,
-        [Display(Name = "緑獣")]
-        GreenBeast,
-        [Display(Name = "獣")]
-        ColorlessBeast,
         [Display(Name = "赤魔")]
         RedTome,
         [Display(Name = "青魔")]
@@ -164,6 +148,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         GreenTome,
         [Display(Name = "無魔")]
         ColorlessTome,
+        [Display(Name = "赤竜")]
+        RedDragon,
         [Display(Name = "赤暗器")]
         RedDagger,
         [Display(Name = "青暗器")]
@@ -180,6 +166,20 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         GreenBow,
         [Display(Name = "弓")]
         ColorlessBow,
+        [Display(Name = "青竜")]
+        BlueDragon,
+        [Display(Name = "緑竜")]
+        GreenDragon,
+        [Display(Name = "無竜")]
+        ColorlessDragon,
+        [Display(Name = "赤獣")]
+        RedBeast,
+        [Display(Name = "青獣")]
+        BlueBeast,
+        [Display(Name = "緑獣")]
+        GreenBeast,
+        [Display(Name = "獣")]
+        ColorlessBeast,
     }
 
     public enum RarityType
@@ -293,7 +293,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
             _ = WeaponType.Subscribe(value =>
             {
                 Color.Value = WeaponToColor((WeaponType)value);
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = HowToGet.Subscribe(value =>
             {
@@ -309,7 +309,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
                     default:
                         break;
                 }
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
         }
 
         private ColorType WeaponToColor(WeaponType weaponType)

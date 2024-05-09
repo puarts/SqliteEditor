@@ -1,12 +1,14 @@
 ﻿using Microsoft.Win32;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using SqliteEditor.Extensions;
 using SqliteEditor.Plugins;
 using SqliteEditor.Utilities;
 using SqliteEditor.ViewModels;
 using SqliteEditor.Views;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SQLite;
@@ -40,7 +42,7 @@ namespace SqliteEditor
             _ = DatabasePath.ActualPath.Subscribe(path =>
             {
                 SyncSqliteInfo();
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = SelectedTableIndex.Subscribe(index =>
             {
@@ -51,17 +53,17 @@ namespace SqliteEditor
                 var table = Tables[index];
                 SelectedTable.Value = table;
                 SchemaTable.Value = table.Schema;
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = OverwriteCommand.Subscribe(() =>
             {
                 SaveDirtyTables();
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = AddRowCommand.Subscribe(() =>
             {
                 AddRowToSelectedTable();
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = OpenEditRowWindowCommand.Subscribe(() =>
             {
@@ -72,7 +74,7 @@ namespace SqliteEditor
                     return;
                 }
                 validCommand.Execute(null);
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = UpdateCurrentRecordCommand.Subscribe(() =>
             {
@@ -85,22 +87,76 @@ namespace SqliteEditor
                     selectedTable.TableName,
                     rowView.Row,
                     selectedTable.Schema);
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = SelectedRow.Subscribe(rowView =>
             {
                 ResetEditPluginViewModel(rowView);
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = OpenInputCsvToolCommand.Subscribe(() =>
             {
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
+
+            _ = OpenStringConversionInfoWindowCommand.Subscribe(() =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var window = new StringConversionInfoWindow()
+                    {
+                        DataContext = this
+                    };
+                    window.Owner = Application.Current.MainWindow;
+                    window.ShowDialog();
+                    SyncStringConversionInfosToPlugins();
+                });
+            }).AddTo(Disposer);
 
             LoadApplicationSettings();
+
+            {
+                List<StringConversionInfo> defaultInfos = [
+                    new(" ", ""),
+                    new("增幅", "増幅"),
+                    new("擊", "撃"),
+                    new("守備魔防", "守備、魔防"),
+                    new("攻撃速さ", "攻撃、速さ"),
+                    new("〇", "○"),
+                    new("－", "-"),
+                    new("~", "～"),
+                    new("備ー", "備-"),
+                    new("撃ー", "撃-"),
+                    new("さー", "さ-"),
+                    new("防ー", "防-"),
+                    new("Pー", "P-"),
+                    new("ダメージー", "ダメージ-"),
+                    new("カウントー", "カウント-"),
+                    new("量ー", "量-"),
+                    new("＋", "+"),
+                    new("x", "×"),
+                    new("（", "("),
+                    new("）", ")"),
+                    new("奥盖", "奥義"),
+                    new("值", "値"),
+                    new(",", "、"),
+                    new(".", "、"),
+                    new(Environment.NewLine, "<br>"),
+                ];
+                foreach (var info  in defaultInfos)
+                {
+                    if (!StringConversionInfos.Contains(info))
+                    {
+                        StringConversionInfos.Add(info);
+                    }
+                }
+            }
+
             AddRowEditPlugin(new Plugins.SkillRowEditPlugins.SkillRowEditPlugin());
             AddRowEditPlugin(new Plugins.HeroRowEditPlugins.HeroRowEditPlugin());
             AddRowEditPlugin(new Plugins.SummonRowEditPlugins.SummonRowEditPlugin());
             AddRowEditPlugin(new Plugins.OriginalCharacterRowEditPlugins.OriginalCharacterRowEditPlugin());
+
+            SyncStringConversionInfosToPlugins();
         }
 
         public LabeledEnumViewModel RowFilterMode { get; } = new(typeof(RowFilterMode), "フィルターモード", SqliteEditor.RowFilterMode.AnyFilter);
@@ -128,6 +184,10 @@ namespace SqliteEditor
 
         public ReactiveCommand OpenInputCsvToolCommand { get; } = new ReactiveCommand();
 
+        public ReactiveCommand OpenStringConversionInfoWindowCommand { get; } = new();
+
+        public ObservableCollection<StringConversionInfo> StringConversionInfos { get; } = new();
+
         public static string ApplicationSettingPath
         {
             get
@@ -149,6 +209,14 @@ namespace SqliteEditor
             }
         }
 
+        private void SyncStringConversionInfosToPlugins()
+        {
+            foreach (var plugin in _plugins)
+            {
+                plugin.SyncStringConversionInfosFrom(StringConversionInfos);
+            }
+        }
+
         public void LoadApplicationSettings()
         {
             var path = ApplicationSettingPath;
@@ -161,6 +229,10 @@ namespace SqliteEditor
             if (deserialized.DatabasePath != null)
             {
                 DatabasePath.Path.Value = deserialized.DatabasePath;
+            }
+            if (deserialized.StringConversionInfos != null)
+            {
+                StringConversionInfos.AddRange(deserialized.StringConversionInfos);
             }
         }
 
@@ -182,8 +254,8 @@ namespace SqliteEditor
 
         private ApplicationSetting CreateApplicationSetting()
         {
-            var setting = new ApplicationSetting();
-            setting.DatabasePath = DatabasePath.ActualPath.Value;
+            var setting = new ApplicationSetting(DatabasePath.ActualPath.Value, 
+                [new("奥盖", "奥義")]);
             return setting;
         }
 
@@ -370,7 +442,7 @@ namespace SqliteEditor
                 {
                     WriteError(exception.Message +Environment.NewLine + exception.StackTrace);
                 }
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
             _openEditWindowCommands.Add(command);
             EditRowMenus.Add(new MenuItemVIewModel(plugin.MenuHeader, command));
         }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -31,7 +32,7 @@ namespace SqliteEditor.Plugins
             {
                 WriteBackToSource();
                 UpdateRecord();
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             RegisterProperties();
 
@@ -39,6 +40,17 @@ namespace SqliteEditor.Plugins
         }
 
         public ObservableCollection<object> RowProperties { get; } = new ObservableCollection<object>();
+
+        public List<StringConversionInfo> StringConversionInfos { get; } = new();
+
+        public void SyncStringConversionInfosFrom(IList<StringConversionInfo> stringConversionInfos)
+        {
+            StringConversionInfos.Clear();
+            if (stringConversionInfos.Count > 0)
+            {
+                StringConversionInfos.AddRange(stringConversionInfos);
+            }
+        }
 
         protected virtual void RegisterProperties()
         {
@@ -220,29 +232,12 @@ namespace SqliteEditor.Plugins
         }
         protected string ConvertToDBDescription(string value)
         {
-            return value
-                .Replace(" ", "")
-                .Replace("增幅", "増幅")
-                .Replace("擊", "撃")
-                .Replace("守備魔防", "守備、魔防")
-                .Replace("攻撃速さ", "攻撃、速さ")
-                .Replace("〇", "○")
-                .Replace("－", "-")
-                .Replace("~", "～")
-                .Replace("備ー", "備-")
-                .Replace("撃ー", "撃-")
-                .Replace("さー", "さ-")
-                .Replace("防ー", "防-")
-                .Replace("Pー", "P-")
-                .Replace("ダメージー", "ダメージ-")
-                .Replace("カウントー", "カウント-")
-                .Replace("量ー", "量-")
-                .Replace("＋", "+")
-                .Replace("x", "×")
-                .Replace("（", "(")
-                .Replace("）", ")")
-                .Replace("奥盖", "奥義")
-                .Replace(Environment.NewLine, "<br>"); ;
+            var result = value;
+            foreach (var info in StringConversionInfos)
+            {
+                result = result.Replace(info.Source, info.Destination);
+            }
+            return result;
         }
 
         private static object? ConvertBoolValueToCellValue(bool? value)

@@ -31,6 +31,17 @@ namespace SqliteEditor.Plugins
 
         public string MenuHeader { get; }
 
+        public List<StringConversionInfo> StringConversionInfos { get; } = new();
+
+        public void SyncStringConversionInfosFrom(IList<StringConversionInfo> stringConversionInfos)
+        {
+            StringConversionInfos.Clear();
+            if (stringConversionInfos.Count > 0)
+            {
+                StringConversionInfos.AddRange(stringConversionInfos);
+            }
+        }
+
         public void ResetViewModel(TableViewModel tableViewModel, int rowIndex)
         {
             if (rowIndex < 0)
@@ -78,7 +89,9 @@ namespace SqliteEditor.Plugins
             _window = new();
             _window.Closed += Window_Closed;
             _window.Owner = Application.Current.MainWindow;
-            _window.DataContext = _createViewModelFunc(row, table);
+            var viewModel = _createViewModelFunc(row, table);
+            viewModel.SyncStringConversionInfosFrom(StringConversionInfos);
+            _window.DataContext = viewModel;
             _window.Show();
         }
 

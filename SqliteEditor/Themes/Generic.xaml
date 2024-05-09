@@ -27,7 +27,11 @@
             </Grid.ColumnDefinitions>
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
                 :</TextBlock>
-            <TextBox Grid.Column="1" Text="{Binding Value}" />
+            <TextBox
+                Grid.Column="1"
+                AcceptsReturn="True"
+                Text="{Binding Value}"
+                TextWrapping="Wrap" />
         </Grid>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledDescriptionViewModel}">
@@ -38,7 +42,11 @@
             </Grid.ColumnDefinitions>
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
                 :</TextBlock>
-            <TextBox Grid.Column="1" Text="{Binding Value}" />
+            <TextBox
+                Grid.Column="1"
+                AcceptsReturn="True"
+                Text="{Binding Value}"
+                TextWrapping="Wrap" />
         </Grid>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledIntStringViewModel}">
@@ -49,7 +57,11 @@
             </Grid.ColumnDefinitions>
             <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
                 :</TextBlock>
-            <TextBox Grid.Column="1" Text="{Binding Value}" />
+            <TextBox
+                Grid.Column="1"
+                AcceptsReturn="True"
+                Text="{Binding Value}"
+                TextWrapping="Wrap" />
         </Grid>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LabeledStringCollectionViewModel}">

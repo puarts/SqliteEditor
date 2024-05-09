@@ -40,7 +40,7 @@ namespace SqliteEditor.ViewModels
                 _ = columnItem.IsVisible.Subscribe(isVisible =>
                 {
                     col.ColumnMapping = isVisible ? MappingType.Element : MappingType.Hidden;
-                }).AddTo(Disposable);
+                }).AddTo(Disposer);
             }
 
             _ = RowFilter.StartWith("").CombineLatest(RowNameFilter.StartWith("")).Subscribe(args =>
@@ -71,7 +71,7 @@ namespace SqliteEditor.ViewModels
                     errorLogAction(exception.Message);
                     view.RowFilter = "";
                 }
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
         }
 
         public string DatabasePath { get; }

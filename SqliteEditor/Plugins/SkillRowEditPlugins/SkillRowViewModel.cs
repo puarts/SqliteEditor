@@ -139,7 +139,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 {
                     SkillType.Value = SkillRowEditPlugins.SkillType.Weapon;
                 }
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = Inherit.Subscribe(inherit =>
             {
@@ -149,16 +149,16 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                     Name.Value.EndsWith("+") || Name.Value.StartsWith("魔器・") ? 
                     "300" : "200";
                 }
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
 
             _ = Description.Subscribe(value =>
             {
                 var desc = ConvertToDBDescription(value);
-                if (desc.StartsWith("奥義が発動しやすい(発動カウント-1)"))
+                if (desc.StartsWith("奥義が発動しやすい(発動カウント-1)") || desc.Contains("<br>奥義が発動しやすい(発動カウント-1)"))
                 {
                     HasKillerEffect.Value = true;
                 }
-                if (desc.StartsWith("杖は他の武器同様のダメージ計算になる"))
+                if (desc.StartsWith("杖は他の武器同様のダメージ計算になる") || desc.Contains("<br>杖は他の武器同様のダメージ計算になる"))
                 {
                     WrathfullStaff.Value = true;
                 }
@@ -190,7 +190,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                         Effectives.SetOrAdd(enumValue);
                     }
                 }
-            }).AddTo(Disposable);
+            }).AddTo(Disposer);
         }
 
         private bool HasStatusAdd(string desc, string status)
