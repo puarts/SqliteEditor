@@ -64,7 +64,7 @@ namespace SqliteEditor.Plugins
             }
 
             var row = table.DataTable.Rows[rowIndex];
-            _window.DataContext = _createViewModelFunc(row, table);
+            _window.DataContext = CreateViewModel(row, table);
         }
 
         public void ShowEditWindow(TableViewModel tableViewModel, int rowIndex)
@@ -89,10 +89,16 @@ namespace SqliteEditor.Plugins
             _window = new();
             _window.Closed += Window_Closed;
             _window.Owner = Application.Current.MainWindow;
-            var viewModel = _createViewModelFunc(row, table);
-            viewModel.SyncStringConversionInfosFrom(StringConversionInfos);
+            var viewModel = CreateViewModel(row, table);
             _window.DataContext = viewModel;
             _window.Show();
+        }
+
+        private TViewModel? CreateViewModel(DataRow row, TableViewModel table)
+        {
+            var viewModel = _createViewModelFunc(row, table);
+            viewModel.SyncStringConversionInfosFrom(StringConversionInfos);
+            return viewModel;
         }
 
         private void Window_Closed(object? sender, EventArgs e)
