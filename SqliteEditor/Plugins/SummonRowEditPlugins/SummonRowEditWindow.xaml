@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:SqliteEditor.Plugins.SummonRowEditPlugins"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:plugins="clr-namespace:SqliteEditor.Plugins"
     xmlns:vm="clr-namespace:SqliteEditor.ViewModels"
     Title="召喚イベント編集"
     Width="400"
@@ -15,6 +16,51 @@
     <Window.InputBindings>
         <KeyBinding Command="{Binding UpdateCommand}" Gesture="Ctrl+S" />
     </Window.InputBindings>
+    <Window.Resources>
+        <ResourceDictionary>
+            <DataTemplate DataType="{x:Type plugins:HeroIdCollectionViewModel}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Width="80"><Run Text="{Binding Label, Mode=OneWay}" />
+                        :</TextBlock>
+                    <ItemsControl
+                        Grid.Column="1"
+                        Focusable="False"
+                        ItemsSource="{Binding Values}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type plugins:HeroIdViewModel}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock>
+                                        <Run>(</Run>
+                                        <Run Text="{Binding Id}" />
+                                        <Run>)</Run>
+                                    </TextBlock>
+                                    <ComboBox
+                                        Name="ComboBox1"
+                                        Grid.Column="1"
+                                        MinWidth="100"
+                                        HorizontalAlignment="Left"
+                                        DisplayMemberPath="DisplayName"
+                                        IsEditable="True"
+                                        ItemsSource="{Binding FilteredHeroInfos}"
+                                        SelectedIndex="{Binding SelectedIndex.Value}"
+                                        SelectionChanged="ComboBox1_SelectionChanged"
+                                        Text="{Binding FilterText, UpdateSourceTrigger=Default, Mode=TwoWay}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
 
     <Grid Margin="10">
         <Grid.RowDefinitions>

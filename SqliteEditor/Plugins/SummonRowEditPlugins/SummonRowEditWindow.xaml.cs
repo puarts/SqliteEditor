@@ -23,5 +23,28 @@ namespace SqliteEditor.Plugins.SummonRowEditPlugins
         {
             InitializeComponent();
         }
+
+        private void ComboBox1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox? comboBox = sender as ComboBox;
+            var vm = comboBox?.DataContext as HeroIdViewModel;
+            if (vm != null)
+            {
+                vm.Id = "";
+                if (e.AddedItems is not null)
+                {
+                    HeroInfo? selected = null;
+                    foreach (HeroInfo item in e.AddedItems)
+                    {
+                        selected = item;
+                        break;
+                    }
+                    if (selected != null)
+                    {
+                        vm.Id = selected.Id.ToString();
+                    }
+                }
+            }
+        }
     }
 }

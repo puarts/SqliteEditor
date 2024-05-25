@@ -127,6 +127,11 @@ namespace SqliteEditor.Plugins
                     case LabeledDateTimeViewModel cast:
                         cast.Value = _source[prop.Key] is DBNull ? null : (DateTime)_source[prop.Key];
                         break;
+                    case HeroIdCollectionViewModel cast:
+                        cast.Values.AddRange(
+                            ConvertToArray(GetStringValue(prop.Key))
+                            .Select(x => new HeroIdViewModel() { Id = x }));
+                        break;
                     default:
                         break;
                 }
@@ -207,6 +212,9 @@ namespace SqliteEditor.Plugins
                         break;
                     case LabeledDateTimeViewModel cast:
                         WriteToCell(prop.Key, cast.Value is null ? DBNull.Value : cast.Value);
+                        break;
+                    case HeroIdCollectionViewModel cast:
+                        WriteToCell(prop.Key, ConvertToString(cast.Values.Select(x => x.Id)));
                         break;
                     default:
                         break;

@@ -255,7 +255,7 @@ namespace SqliteEditor
         private ApplicationSetting CreateApplicationSetting()
         {
             var setting = new ApplicationSetting(DatabasePath.ActualPath.Value, 
-                [new("奥盖", "奥義")]);
+                StringConversionInfos.ToImmutableList());
             return setting;
         }
 
