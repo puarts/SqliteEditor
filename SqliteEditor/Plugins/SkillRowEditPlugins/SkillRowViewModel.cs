@@ -143,11 +143,28 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
 
             _ = Inherit.Subscribe(inherit =>
             {
-                if ((SkillRowEditPlugins.SkillType)SkillType.Value == SkillRowEditPlugins.SkillType.Weapon)
+                var skillType = (SkillRowEditPlugins.SkillType)SkillType.Value;
+                switch (skillType)
                 {
-                    Sp.Value = !inherit.GetValueOrDefault() ? "400" :
-                    Name.Value.EndsWith("+") || Name.Value.StartsWith("魔器・") ? 
-                    "300" : "200";
+                    case SkillRowEditPlugins.SkillType.Weapon:
+                        Sp.Value = !inherit.GetValueOrDefault() ? "400" :
+                                        Name.Value.EndsWith("+") || Name.Value.StartsWith("魔器・") ?
+                                        "300" : "200";
+                        break;
+                    case SkillRowEditPlugins.SkillType.PassiveA:
+                    case SkillRowEditPlugins.SkillType.PassiveB:
+                    case SkillRowEditPlugins.SkillType.PassiveC:
+                        if (!inherit.GetValueOrDefault())
+                        {
+                            Sp.Value = "300";
+                        }
+                        break;
+                    case SkillRowEditPlugins.SkillType.Special:
+                        if (!inherit.GetValueOrDefault())
+                        {
+                            Sp.Value = "500";
+                        }
+                        break;
                 }
             }).AddTo(Disposer);
 
@@ -157,6 +174,10 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 if (desc.StartsWith("奥義が発動しやすい(発動カウント-1)") || desc.Contains("<br>奥義が発動しやすい(発動カウント-1)"))
                 {
                     HasKillerEffect.Value = true;
+                }
+                else if (desc.StartsWith("奥義がとても発動しやすい(発動") || desc.Contains("<br>奥義がとても発動しやすい(発動"))
+                {
+                    HasKillerEffect2.Value = true;
                 }
                 if (desc.StartsWith("杖は他の武器同様のダメージ計算になる") || desc.Contains("<br>杖は他の武器同様のダメージ計算になる"))
                 {
@@ -185,7 +206,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                     MemberInfo[] memInfo = effectiveType.GetMember(enumValue.ToString());
                     object[] attributes = memInfo[0].GetCustomAttributes(typeof(DisplayAttribute), false);
                     var name = ((DisplayAttribute)attributes[0]).Name;
-                    if (HasStatusAdd(desc, $"{name}特効<br>"))
+                    if (desc.StartsWith($"{name}特効<br>") || desc.Contains($"<br>{name}特効") || desc.EndsWith($"{name}特効"))
                     {
                         Effectives.SetOrAdd(enumValue);
                     }
@@ -210,6 +231,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         public LabeledEnumCollectionViewModel InvalidateEffectives { get; } = new(typeof(EffectiveType), "特効無効", EffectiveType.None);
 
         public LabeledBoolViewModel HasKillerEffect { get; } = new("キラー効果");
+        public LabeledBoolViewModel HasKillerEffect2 { get; } = new("キラー効果2");
         public LabeledEnumViewModel WeaponType { get; } = new LabeledEnumViewModel(typeof(WeaponType), "武器種");
         public LabeledDescriptionViewModel Description { get; } = new LabeledDescriptionViewModel("説明");
         public LabeledIntStringViewModel Atk { get; } = new LabeledIntStringViewModel("攻撃");
@@ -264,6 +286,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
             var bindProps = dict.Values.ToList();
             bindProps.Insert(bindProps.IndexOf(InheritableWeaponType), Inherit);
             bindProps.Add(HasKillerEffect);
+            bindProps.Add(HasKillerEffect2);
 
             AutoBindProperties.AddRange(bindProps);
         }
@@ -280,13 +303,14 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
             //}
 
             HasKillerEffect.Value = GetIntValueAsString("cooldown_count") == "-1" ? true : false;
+            HasKillerEffect2.Value = GetIntValueAsString("cooldown_count") == "-2" ? true : false;
         }
 
         protected override void WriteBackToSourceCore()
         {
             WriteToCell("inherit", Inherit.Value is null ? DBNull.Value : Inherit.Value.Value ? "可" : "不可");
             //WriteToCell("effective", ConvertToString(Effectives.Select(x => EnumUtility.ConvertEnumToDisplayName(x.Value))));
-            WriteToCell("cooldown_count", HasKillerEffect.Value ?? false ? "-1" : DBNull.Value);
+            WriteToCell("cooldown_count", HasKillerEffect.Value ?? false ? "-1" : HasKillerEffect2.Value ?? false ? "-2" : DBNull.Value);
         }
     }
 }

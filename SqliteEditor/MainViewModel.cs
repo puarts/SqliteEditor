@@ -121,7 +121,6 @@ namespace SqliteEditor
                     new("擊", "撃"),
                     new("守備魔防", "守備、魔防"),
                     new("攻撃速さ", "攻撃、速さ"),
-                    new("〇", "○"),
                     new("－", "-"),
                     new("~", "～"),
                     new("備ー", "備-"),
@@ -140,6 +139,12 @@ namespace SqliteEditor
                     new("值", "値"),
                     new(",", "、"),
                     new(".", "、"),
+                    new("天顔", "天脈"),
+                    new("最大倍", "最大値"),
+                    new("自身の奥義発動カウント変動量を無効", "自身の奥義発動カウント変動量-を無効"),
+                    new("ダメージを%軽減","ダメージを○○%軽減"),
+                    new("ダメージ+×", "ダメージ+○×"),
+                    new("〇", "○"),
                     new(Environment.NewLine, "<br>"),
                 ];
                 foreach (var info  in defaultInfos)
