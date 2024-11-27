@@ -64,7 +64,14 @@ namespace SqliteEditor.ViewModels
                         }
                         actualFilters.Add("(" + string.Join(" or ", nameFilters) + ")");
                     }
-                    view.RowFilter = string.Join(" and ", actualFilters);
+                    var rowFilter = string.Join(" and ", actualFilters);
+
+                    rowFilter = rowFilter
+                        // RowFilter では != が使えない。<>が代わり
+                        .Replace("!=", "<>")
+                        // ダブルクォーテーションは RowFiletr に使用できないのでシングルクォーテーションに置き換える
+                        .Replace("\"", "'");
+                    view.RowFilter = rowFilter;
                 }
                 catch (Exception exception)
                 {

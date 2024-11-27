@@ -133,12 +133,46 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
             InvalidateEffectives.AddNewItemsWhile(() => InvalidateEffectives.Count < 2);
             MustLearn.AddNewItemsWhile(() => MustLearn.Count < 2);
 
+            _ = Name.Subscribe(name =>
+            {
+                if (name == string.Empty) return;
+
+                if (char.IsNumber(name.Last()))
+                {
+                    Inherit.Value = true;
+                }
+            }).AddTo(Disposer);
+
             _ = WeaponType.Subscribe(x =>
             {
-                if ((SkillRowEditPlugins.SkillType)x != SkillRowEditPlugins.SkillType.None)
+                bool isWeapon = (SkillRowEditPlugins.SkillType)x != SkillRowEditPlugins.SkillType.None;
+                if (isWeapon)
                 {
                     SkillType.Value = SkillRowEditPlugins.SkillType.Weapon;
                 }
+            }).AddTo(Disposer);
+
+            _ = SkillType.Subscribe(x =>
+            {
+                var skillType = (SkillRowEditPlugins.SkillType)x;
+                bool isWeapon = skillType == SkillRowEditPlugins.SkillType.Weapon;
+                var weaponProps = new IPropertyViewModel[]
+                {
+                    Might,
+                    MightRefine,
+                    CanStatusRefine,
+                    SpecialRefineHp,
+                    RefineDate,
+                    RefineDescription,
+                    RefineDescription2,
+                    SpecialRefineDescription,
+                };
+                foreach (var prop in weaponProps)
+                {
+                    prop.IsVisible.Value = isWeapon;
+                }
+
+                Count.IsVisible.Value = skillType == SkillRowEditPlugins.SkillType.Special;
             }).AddTo(Disposer);
 
             _ = Inherit.Subscribe(inherit =>
@@ -168,50 +202,61 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
                 }
             }).AddTo(Disposer);
 
-            _ = Description.Subscribe(value =>
+            _ = UpdateByDescriptionCommand.Subscribe(() =>
             {
-                var desc = ConvertToDBDescription(value);
-                if (desc.StartsWith("奥義が発動しやすい(発動カウント-1)") || desc.Contains("<br>奥義が発動しやすい(発動カウント-1)"))
-                {
-                    HasKillerEffect.Value = true;
-                }
-                else if (desc.StartsWith("奥義がとても発動しやすい(発動") || desc.Contains("<br>奥義がとても発動しやすい(発動"))
-                {
-                    HasKillerEffect2.Value = true;
-                }
-                if (desc.StartsWith("杖は他の武器同様のダメージ計算になる") || desc.Contains("<br>杖は他の武器同様のダメージ計算になる"))
-                {
-                    WrathfullStaff.Value = true;
-                }
-                if (HasStatusAdd(desc, "攻撃"))
-                {
-                    Atk.Value = "3";
-                }
-                if (HasStatusAdd(desc, "速さ"))
-                {
-                    Spd.Value = "3";
-                }
-                if (HasStatusAdd(desc, "守備"))
-                {
-                    Def.Value = "3";
-                }
-                if (HasStatusAdd(desc, "魔防"))
-                {
-                    Res.Value = "3";
-                }
+                SyncFromDescription(Description.Value);
+            });
 
-                var effectiveType = typeof(EffectiveType);
-                foreach (var enumValue in Enum.GetValues<EffectiveType>())
+            _ = Description.Subscribe(SyncFromDescription).AddTo(Disposer);
+        }
+
+        private void SyncFromDescription(string value)
+        {
+            var desc = ConvertToDBDescription(value);
+            if (desc.StartsWith("奥義が発動しやすい(発動カウント-1)") || desc.Contains("<br>奥義が発動しやすい(発動カウント-1)"))
+            {
+                HasKillerEffect.Value = true;
+            }
+            else if (desc.StartsWith("奥義がとても発動しやすい(発動") || desc.Contains("<br>奥義がとても発動しやすい(発動"))
+            {
+                HasKillerEffect2.Value = true;
+            }
+            if (desc.StartsWith("杖は他の武器同様のダメージ計算になる") || desc.Contains("<br>杖は他の武器同様のダメージ計算になる"))
+            {
+                WrathfullStaff.Value = true;
+            }
+            if (HasStatusAdd(desc, "攻撃"))
+            {
+                Atk.Value = "3";
+            }
+            if (HasStatusAdd(desc, "速さ"))
+            {
+                Spd.Value = "3";
+            }
+            if (HasStatusAdd(desc, "守備"))
+            {
+                Def.Value = "3";
+            }
+            if (HasStatusAdd(desc, "魔防"))
+            {
+                Res.Value = "3";
+            }
+
+            var effectiveType = typeof(EffectiveType);
+            foreach (var enumValue in Enum.GetValues<EffectiveType>())
+            {
+                MemberInfo[] memInfo = effectiveType.GetMember(enumValue.ToString());
+                object[] attributes = memInfo[0].GetCustomAttributes(typeof(DisplayAttribute), false);
+                var name = ((DisplayAttribute)attributes[0]).Name;
+                if (desc.StartsWith($"{name}特効<br>") || desc.Contains($"<br>{name}特効") || desc.EndsWith($"{name}特効"))
                 {
-                    MemberInfo[] memInfo = effectiveType.GetMember(enumValue.ToString());
-                    object[] attributes = memInfo[0].GetCustomAttributes(typeof(DisplayAttribute), false);
-                    var name = ((DisplayAttribute)attributes[0]).Name;
-                    if (desc.StartsWith($"{name}特効<br>") || desc.Contains($"<br>{name}特効") || desc.EndsWith($"{name}特効"))
-                    {
-                        Effectives.SetOrAdd(enumValue);
-                    }
+                    Effectives.SetOrAdd(enumValue);
                 }
-            }).AddTo(Disposer);
+                if (desc.StartsWith($"{name}特効無効<br>") || desc.Contains($"<br>{name}特効無効") || desc.EndsWith($"{name}特効無効"))
+                {
+                    InvalidateEffectives.SetOrAdd(enumValue);
+                }
+            }
         }
 
         private bool HasStatusAdd(string desc, string status)
@@ -219,6 +264,7 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
             return desc.StartsWith($"{status}+3<br") || desc.Contains($"<br>{status}+3<br>");
         }
 
+        public ReactiveCommand UpdateByDescriptionCommand { get; } = new();
 
         public LabeledStringCollectionViewModel MustLearn { get; } = new("下位スキル");
         public LabeledBoolViewModel Inherit { get; } = new("継承可否");
@@ -239,29 +285,40 @@ namespace SqliteEditor.Plugins.SkillRowEditPlugins
         public LabeledIntStringViewModel Def { get; } = new LabeledIntStringViewModel("守備");
         public LabeledIntStringViewModel Res { get; } = new LabeledIntStringViewModel("魔防");
         public LabeledBoolViewModel WrathfullStaff { get; } = new LabeledBoolViewModel("神罰");
-        public ObservableCollection<object> AutoBindProperties { get; } = new ObservableCollection<object>();
+        public ObservableCollection<IPropertyViewModel> AutoBindProperties { get; } = new ObservableCollection<IPropertyViewModel>();
 
         public LabeledStringViewModel InheritableWeaponType { get; } = new LabeledStringViewModel("武器制限");
 
         public LabeledStringViewModel Name { get; } = new LabeledStringViewModel("名前");
+
+        public LabeledBoolViewModel CanStatusRefine { get; } = new LabeledBoolViewModel("ステータス錬成");
+
+        public LabeledIntStringViewModel SpecialRefineHp { get; } = new("特殊錬成後のHP+");
+
+        public LabeledDateTimeViewModel RefineDate { get; } = new LabeledDateTimeViewModel("錬成日");
+
+        public LabeledDescriptionViewModel RefineDescription { get; } = new LabeledDescriptionViewModel("説明(錬成)");
+        public LabeledDescriptionViewModel RefineDescription2 { get; } = new LabeledDescriptionViewModel("説明(錬成2)");
+        public LabeledDescriptionViewModel SpecialRefineDescription { get; } = new LabeledDescriptionViewModel("説明(特殊錬成)");
+
         protected override void RegisterProperties()
         {
-            var dict = new Dictionary<string, object>()
+            var dict = new Dictionary<string, IPropertyViewModel>()
             {
-                { "name", Name },
-                { "english_name", new LabeledStringViewModel("英語名") },
-                { "description", Description },
-                { "refine_description", new LabeledDescriptionViewModel("説明(錬成)") },
-                { "refine_description2", new LabeledDescriptionViewModel("説明(錬成2)") },
-                { "special_refine_description", new LabeledDescriptionViewModel("説明(特殊錬成)") },
-                { "can_status_refine", new LabeledBoolViewModel("ステータス錬成") },
-                { "special_refine_hp", new LabeledIntStringViewModel("特殊錬成後のHP+") },
-                { "must_learn", MustLearn },
-                { "release_date", new LabeledDateTimeViewModel("リリース日") },
-                { "refined_date", new LabeledDateTimeViewModel("錬成日") },
                 { "type", SkillType },
                 { "weapon_type", WeaponType },
                 { "assist_type", new LabeledEnumViewModel(typeof(AssistType), "補助種") },
+                { "name", Name },
+                { "english_name", new LabeledStringViewModel("英語名") },
+                { "description", Description },
+                { "refine_description", RefineDescription },
+                { "refine_description2", RefineDescription2 },
+                { "special_refine_description", SpecialRefineDescription },
+                { "can_status_refine", CanStatusRefine },
+                { "special_refine_hp", SpecialRefineHp },
+                { "must_learn", MustLearn },
+                { "release_date", new LabeledDateTimeViewModel("リリース日") },
+                { "refined_date", RefineDate },
                 { "inheritable_weapon_type", InheritableWeaponType },
                 { "inheritable_move_type", new LabeledStringViewModel("移動制限") },
                 { "sp", Sp },

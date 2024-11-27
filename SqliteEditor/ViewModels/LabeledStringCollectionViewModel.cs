@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledStringCollectionViewModel : ObservableCollection<ReactiveProperty<string>>
+    public class LabeledStringCollectionViewModel : ObservableCollection<ReactiveProperty<string>>, IPropertyViewModel
     {
         public LabeledStringCollectionViewModel(string label)
         {
@@ -25,5 +25,6 @@ namespace SqliteEditor.ViewModels
                 Add(item);
             }
         }
+        public ReactiveProperty<bool> IsVisible { get; } = new(true);
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledIntStringViewModel : ReactiveProperty<string>
+    public class LabeledIntStringViewModel : ReactiveProperty<string>, IPropertyViewModel
     {
         public LabeledIntStringViewModel(string label)
         {
@@ -15,5 +15,6 @@ namespace SqliteEditor.ViewModels
         }
 
         public string Label { get; }
+        public ReactiveProperty<bool> IsVisible { get; } = new(true);
     }
 }

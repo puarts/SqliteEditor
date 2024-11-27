@@ -96,7 +96,7 @@ public class SummonRowViewModel : RowEditViewModelBase
     public HeroIdCollectionViewModel Colorless { get; } = new("無");
     protected override void RegisterProperties()
     {
-        RegisterProperties(new Dictionary<string, object>()
+        RegisterProperties(new Dictionary<string, IPropertyViewModel>()
         {
             { "name", new LabeledStringViewModel("名前") },
             { "type", new LabeledEnumViewModel(typeof(SummonType), "種類") },

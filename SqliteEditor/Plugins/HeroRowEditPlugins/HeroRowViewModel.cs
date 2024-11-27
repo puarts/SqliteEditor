@@ -124,6 +124,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         RearmedHero,
         [Display(Name = "響心英雄")]
         AttunedHero,
+        [Display(Name = "お供英雄")]
+        AidedHero,
         [Display(Name = "特務機関")]
         OrderOfHeroes,
     }
@@ -140,6 +142,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Axe,
         [Display(Name = "杖")]
         Staff,
+
         [Display(Name = "赤魔")]
         RedTome,
         [Display(Name = "青魔")]
@@ -148,30 +151,21 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         GreenTome,
         [Display(Name = "無魔")]
         ColorlessTome,
-        [Display(Name = "赤竜")]
-        RedDragon,
-        [Display(Name = "赤暗器")]
-        RedDagger,
-        [Display(Name = "青暗器")]
-        BlueDagger,
-        [Display(Name = "緑暗器")]
-        GreenDagger,
-        [Display(Name = "暗器")]
-        ColorlessDagger,
-        [Display(Name = "赤弓")]
-        RedBow,
-        [Display(Name = "青弓")]
-        BlueBow,
-        [Display(Name = "緑弓")]
-        GreenBow,
+
         [Display(Name = "弓")]
         ColorlessBow,
+        [Display(Name = "暗器")]
+        ColorlessDagger,
+
+        [Display(Name = "赤竜")]
+        RedDragon,
         [Display(Name = "青竜")]
         BlueDragon,
         [Display(Name = "緑竜")]
         GreenDragon,
         [Display(Name = "無竜")]
         ColorlessDragon,
+
         [Display(Name = "赤獣")]
         RedBeast,
         [Display(Name = "青獣")]
@@ -180,6 +174,20 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         GreenBeast,
         [Display(Name = "獣")]
         ColorlessBeast,
+
+        [Display(Name = "赤暗器")]
+        RedDagger,
+        [Display(Name = "青暗器")]
+        BlueDagger,
+        [Display(Name = "緑暗器")]
+        GreenDagger,
+
+        [Display(Name = "赤弓")]
+        RedBow,
+        [Display(Name = "青弓")]
+        BlueBow,
+        [Display(Name = "緑弓")]
+        GreenBow,
     }
 
     public enum RarityType
@@ -198,6 +206,12 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
     {
         [Display(Name = "")]
         None,
+        [Display(Name = "死闘220")]
+        Duel220,
+        [Display(Name = "死闘215")]
+        Duel215,
+        [Display(Name = "死闘210")]
+        Duel210,
         [Display(Name = "死闘205")]
         Duel205,
         [Display(Name = "死闘200")]
@@ -244,6 +258,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Ascended,
         [Display(Name = "紋章士")]
         Emblem,
+        [Display(Name = "お供")]
+        Aided,
     }
 
     public enum StatusRevisionType
@@ -374,7 +390,7 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
 
         protected override void RegisterProperties()
         {
-            var dict = new Dictionary<string, object>()
+            var dict = new Dictionary<string, IPropertyViewModel>()
             {
                 { "name", new LabeledStringViewModel("名前") },
                 { "pure_name", PureNames },
@@ -405,16 +421,16 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
                 { "description", new LabeledDescriptionViewModel("概要") },
                 { "official_url", new LabeledStringViewModel("URL") },
                 { "internal_id", new LabeledStringViewModel("内部ID") },
-                { "hp_5", new LabeledIntStringViewModel("LV40 HP") },
-                { "atk_5", new LabeledIntStringViewModel("LV40 攻") },
-                { "spd_5", new LabeledIntStringViewModel("LV40 速") },
-                { "def_5", new LabeledIntStringViewModel("LV40 守") },
-                { "res_5", new LabeledIntStringViewModel("LV40 魔") },
                 { "hp_5_lv1", new LabeledIntStringViewModel("LV1 HP") },
                 { "atk_5_lv1", new LabeledIntStringViewModel("LV1 攻") },
                 { "spd_5_lv1", new LabeledIntStringViewModel("LV1 速") },
                 { "def_5_lv1", new LabeledIntStringViewModel("LV1 守") },
                 { "res_5_lv1", new LabeledIntStringViewModel("LV1 魔") },
+                { "hp_5", new LabeledIntStringViewModel("LV40 HP") },
+                { "atk_5", new LabeledIntStringViewModel("LV40 攻") },
+                { "spd_5", new LabeledIntStringViewModel("LV40 速") },
+                { "def_5", new LabeledIntStringViewModel("LV40 守") },
+                { "res_5", new LabeledIntStringViewModel("LV40 魔") },
                 { "resplendent", Resplendent },
                 { "resplendent_date", new LabeledDateTimeViewModel("神装リリース日") },
                 { "resplendent_url", new LabeledStringViewModel("神装URL") },

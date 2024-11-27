@@ -86,7 +86,7 @@ public class HeroIdViewModel : CompositeDisposableBase
     }
 }
 
-public class HeroIdCollectionViewModel : CompositeDisposableBase
+public class HeroIdCollectionViewModel : CompositeDisposableBase, IPropertyViewModel
 {
     public HeroIdCollectionViewModel(string label)
     {
@@ -96,6 +96,7 @@ public class HeroIdCollectionViewModel : CompositeDisposableBase
     public string Label { get; }
 
     public ObservableCollection<HeroIdViewModel> Values { get; } = new();
+    public ReactiveProperty<bool> IsVisible { get; } = new(true);
 
     public void AddHeroInfo(HeroInfo info)
     {

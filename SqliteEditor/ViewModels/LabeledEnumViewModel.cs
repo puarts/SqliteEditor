@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace SqliteEditor.ViewModels
 {
-    public abstract class EnumViewModelBase : ReactiveProperty<object>
+    public abstract class EnumViewModelBase : ReactiveProperty<object>, IPropertyViewModel
     {
         public EnumViewModelBase(Type enumType)
         {
@@ -28,6 +28,7 @@ namespace SqliteEditor.ViewModels
         public Type EnumType { get; }
 
         public Array EnumValues { get; }
+        public ReactiveProperty<bool> IsVisible { get; } = new(true);
     }
 
     public class EnumViewModel : EnumViewModelBase
@@ -50,30 +51,18 @@ namespace SqliteEditor.ViewModels
 
     public class LabeledEnumViewModel : EnumViewModelBase
     {
-        private readonly Func<bool>? _isVisibleFunc;
-        private bool _isVisible = true;
-
         public LabeledEnumViewModel(Type enumType, string label, Func<bool>? isVisibleFunc = null)
             : base(enumType)
         {
             Label = label;
-            this._isVisibleFunc = isVisibleFunc;
         }
 
         public LabeledEnumViewModel(Type enumType, string label, object defaultValue, Func<bool>? isVisibleFunc = null)
             : base(enumType, defaultValue)
         {
             Label = label;
-            this._isVisibleFunc = isVisibleFunc;
         }
 
         public string Label { get; }
-
-        public bool IsVisible { get => _isVisible; }
-
-        public void UpdateVisibility()
-        {
-            _isVisible = _isVisibleFunc?.Invoke() ?? true;
-        }
     }
 }

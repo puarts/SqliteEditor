@@ -21,8 +21,8 @@ namespace SqliteEditor.Plugins
     {
         private readonly DataRow _source;
         private readonly TableViewModel _tableViewModel;
-        protected readonly Dictionary<string, object> ColumnNameToReadPropertyDict = new();
-        protected readonly Dictionary<string, object> ColumnNameToWritePropertyDict = new();
+        protected readonly Dictionary<string, IPropertyViewModel> ColumnNameToReadPropertyDict = new();
+        protected readonly Dictionary<string, IPropertyViewModel> ColumnNameToWritePropertyDict = new();
 
         protected RowEditViewModelBase(DataRow source, TableViewModel tableViewModel)
         {
@@ -39,7 +39,7 @@ namespace SqliteEditor.Plugins
             SyncFromSource();
         }
 
-        public ObservableCollection<object> RowProperties { get; } = new ObservableCollection<object>();
+        public ObservableCollection<IPropertyViewModel> RowProperties { get; } = new ObservableCollection<IPropertyViewModel>();
 
         public List<StringConversionInfo> StringConversionInfos { get; } = new();
 
@@ -58,14 +58,14 @@ namespace SqliteEditor.Plugins
 
         public ReactiveCommand UpdateCommand { get; } = new ReactiveCommand();
 
-        protected void RegisterProp(string columnName, object prop)
+        protected void RegisterProp(string columnName, IPropertyViewModel prop)
         {
             ColumnNameToReadPropertyDict.Add(columnName, prop);
             ColumnNameToWritePropertyDict.Add(columnName, prop);
             RowProperties.Add(prop);
         }
 
-        protected void RegisterProperties(Dictionary<string, object> props)
+        protected void RegisterProperties(Dictionary<string, IPropertyViewModel> props)
         {
             foreach (var prop in props)
             {

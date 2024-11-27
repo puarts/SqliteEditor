@@ -35,7 +35,7 @@ namespace SqliteEditor.Plugins.OriginalCharacterRowEditPlugins
 
         protected override void RegisterProperties()
         {
-            RegisterProperties(new Dictionary<string, object>()
+            RegisterProperties(new Dictionary<string, IPropertyViewModel>()
             {
                 { "name", new LabeledStringViewModel("名前") },
                 { "fullname", new LabeledStringViewModel("フルネーム") },

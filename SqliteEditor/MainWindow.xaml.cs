@@ -90,7 +90,7 @@ namespace SqliteEditor
             {
                 e.Handled = true; // デフォルトのショートカットを無効化
 
-                if (sender is DataGrid dataGrid && dataGrid.CurrentCell != null)
+                if (sender is DataGrid dataGrid && dataGrid?.CurrentCell != null)
                 {
                     var cell = GetCell(dataGrid.CurrentCell);
                     if (cell != null)
@@ -121,7 +121,7 @@ namespace SqliteEditor
 
         private static void MoveFocusToNextCell(DataGrid dataGrid)
         {
-            if (dataGrid.CurrentCell != null)
+            if (dataGrid?.CurrentCell != null)
             {
                 DataGridCellInfo currentCell = dataGrid.CurrentCell;
                 int columnIndex = dataGrid.CurrentCell.Column.DisplayIndex;

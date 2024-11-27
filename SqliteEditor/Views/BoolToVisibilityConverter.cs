@@ -15,7 +15,7 @@ namespace SqliteEditor.Views
 
         public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)(value ?? false) ? Visibility.Visible : Visibility.Hidden;
+            return (bool)(value ?? false) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

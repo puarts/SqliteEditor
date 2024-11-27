@@ -2,7 +2,7 @@
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledDescriptionViewModel : ReactiveProperty<string>
+    public class LabeledDescriptionViewModel : ReactiveProperty<string>, IPropertyViewModel
     {
         public LabeledDescriptionViewModel(string label)
         {
@@ -10,5 +10,6 @@ namespace SqliteEditor.ViewModels
         }
 
         public string Label { get; }
+        public ReactiveProperty<bool> IsVisible { get; } = new(true);
     }
 }

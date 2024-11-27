@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledEnumCollectionViewModel : ObservableCollection<ReactiveProperty<object>>
+    public class LabeledEnumCollectionViewModel : ObservableCollection<ReactiveProperty<object>>, IPropertyViewModel
     {
         public LabeledEnumCollectionViewModel(Type enumType, string label, object defaultValue)
         {
@@ -35,6 +35,7 @@ namespace SqliteEditor.ViewModels
         public object DefaultValue { get; }
         public Array EnumValues { get; }
 
+        public ReactiveProperty<bool> IsVisible { get; } = new(true);
 
         public void SetOrAdd(object value)
         {

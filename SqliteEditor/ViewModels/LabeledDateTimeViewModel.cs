@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledDateTimeViewModel : ReactiveProperty<DateTime?>
+    public class LabeledDateTimeViewModel : ReactiveProperty<DateTime?>, IPropertyViewModel
     {
         public LabeledDateTimeViewModel(string label)
         {
@@ -15,5 +15,6 @@ namespace SqliteEditor.ViewModels
         }
 
         public string Label { get; }
+        public ReactiveProperty<bool> IsVisible { get; } = new(true);
     }
 }

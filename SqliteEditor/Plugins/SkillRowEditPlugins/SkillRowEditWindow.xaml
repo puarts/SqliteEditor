@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:SqliteEditor.Plugins.SkillRowEditPlugins"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:v="clr-namespace:SqliteEditor.Views"
     xmlns:vm="clr-namespace:SqliteEditor.ViewModels"
     Title="スキル編集"
     Width="400"
@@ -31,7 +32,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ContentPresenter Content="{Binding}" />
+                            <ContentPresenter Content="{Binding .}" Visibility="{Binding IsVisible.Value, Converter={x:Static v:BoolToVisibieilityConverter.Instance}}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -41,8 +42,10 @@
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Button Command="{Binding UpdateCommand}">更新</Button>
+            <Button Grid.Column="1" Command="{Binding UpdateByDescriptionCommand}">説明文から同期</Button>
         </Grid>
     </Grid>
 </Window>

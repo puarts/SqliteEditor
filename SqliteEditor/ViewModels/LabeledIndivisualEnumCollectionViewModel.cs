@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace SqliteEditor.ViewModels
 {
-    public class LabeledIndivisualEnumCollectionViewModel : ObservableCollection<EnumViewModel>
+    public class LabeledIndivisualEnumCollectionViewModel : ObservableCollection<EnumViewModel>, IPropertyViewModel
     {
         public LabeledIndivisualEnumCollectionViewModel(IEnumerable<EnumViewModel> enums, string label)
         {
@@ -21,6 +21,7 @@ namespace SqliteEditor.ViewModels
         public bool TrimsSqliteArraySeparatorOnBothSide { get; set; } = false;
 
         public string Label { get; }
+        public ReactiveProperty<bool> IsVisible { get; } = new(true);
 
         public EnumViewModel? FindEnumViewModelFromValue(string value)
         {

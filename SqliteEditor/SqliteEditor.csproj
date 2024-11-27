@@ -2,20 +2,16 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\SplashScreen.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ReactiveProperty.WPF" Version="8.2.0" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="ReactiveProperty.WPF" Version="9.6.0" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+    <PackageReference Include="System.Reactive" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,15 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Plugins\HeroRowEditPlugins\HeroRowEditWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Plugins\OriginalCharacterEditPlugins\OriginalCharacterRowEditWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Plugins\SummonRowEditPlugins\SummonRowEditWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
