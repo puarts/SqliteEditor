@@ -115,5 +115,21 @@ namespace SqliteEditor.ViewModels
         {
             IsDirty = !DataTableUtility.AreTablesEqual(_dataTable, _dirtySourceTable);
         }
+
+        public IEnumerable<DataColumn> EnumerateColumns()
+        {
+            foreach (DataColumn col in _dataTable.Columns)
+            {
+                yield return col;
+            }
+        }
+
+        public IEnumerable<DataRow> EnumerateRows()
+        {
+            foreach (DataRow row in _dataTable.Rows)
+            {
+                yield return row;
+            }
+        }
     }
 }

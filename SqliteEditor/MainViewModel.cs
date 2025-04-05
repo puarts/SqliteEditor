@@ -112,6 +112,181 @@ namespace SqliteEditor
                 });
             }).AddTo(Disposer);
 
+            _ = AutoSetSkillInheritCommand.Subscribe(() =>
+            {
+                if (SelectedTable.Value is null) return;
+
+                var table = SelectedTable.Value;
+                if (table.TableName != "skills")
+                {
+                    WriteError("skills テーブルを選択してください。");
+                    return;
+                }
+
+                try
+                {
+                    var nameColumn = table.EnumerateColumns().First(x => x.ColumnName == "name");
+                    var inheritColumn = table.EnumerateColumns().First(x => x.ColumnName == "inherit");
+                    var typeColumn = table.EnumerateColumns().First(x => x.ColumnName == "type");
+                    var rows = table.EnumerateRows().ToArray();
+                    foreach (var row in rows)
+                    {
+                        if (row[inheritColumn] is not DBNull and not "") continue;
+
+                        var name = (string)row[nameColumn];
+                        var typeStr = row[typeColumn] as string;
+                        row[inheritColumn] = FehSkillUtility.EstimateInheritance(name, typeStr) ? "可" : "不可";
+                    }
+
+                    var mustLearnColumn = table.EnumerateColumns().First(x => x.ColumnName == "must_learn");
+                    foreach (var row in rows)
+                    {
+                        if (row[mustLearnColumn] is not DBNull and not "") continue;
+
+                        var name = (string)row[nameColumn];
+                        var lastChar = name[^1];
+                        if (char.IsNumber(lastChar))
+                        {
+                            int num = int.Parse(lastChar.ToString());
+                            int lowerNum = num - 1;
+                            if (lowerNum >= 1)
+                            {
+                                string baseName = name.Substring(0, name.Length - 1);
+                                string lowerSkillName = $"{baseName}{lowerNum}";
+                                row[mustLearnColumn] = $"|{lowerSkillName}|";
+                            }
+                        }
+                        else if (lastChar == '+')
+                        {
+                            string lowerSkillName = name.Substring(0, name.Length - 1);
+                            row[mustLearnColumn] = $"|{lowerSkillName}|";
+                        }
+                    }
+
+                    var inheritWeaponTypeColumn = table.EnumerateColumns().First(x => x.ColumnName == "inheritable_weapon_type");
+                    var inheritMoveTypeColumn = table.EnumerateColumns().First(x => x.ColumnName == "inheritable_move_type");
+                    foreach (var row in rows)
+                    {
+                        if (row[inheritColumn] is not "可"
+                            || row[typeColumn] is not string typeStr
+                            || !typeStr.Contains("パッシブ")
+                            || (row[inheritWeaponTypeColumn] is not DBNull and not ""
+                                || row[inheritMoveTypeColumn] is not DBNull and not "")) continue;
+
+                        var name = (string)row[nameColumn];
+                        var lastChar = name[^1];
+                        if (char.IsNumber(lastChar))
+                        {
+                            // 鬼神の一撃3など
+                            string baseName = name.Substring(0, name.Length - 1);
+                            var partName = baseName
+                                .Replace("攻撃", "")
+                                .Replace("速さ", "")
+                                .Replace("守備", "")
+                                .Replace("魔防", "")
+                                .Replace("鬼神", "")
+                                .Replace("飛燕", "")
+                                .Replace("金剛", "")
+                                .Replace("明鏡", "")
+                                ;
+                            var existingRow = rows.FirstOrDefault(x => ((string)x[nameColumn]).Contains(partName)
+                                && (x[inheritWeaponTypeColumn] is not DBNull and not "" || x[inheritMoveTypeColumn] is not DBNull and not ""));
+                            if (existingRow is not null)
+                            {
+                                row[inheritWeaponTypeColumn] = existingRow[inheritWeaponTypeColumn];
+                                row[inheritMoveTypeColumn] = existingRow[inheritMoveTypeColumn];
+                            }
+                        }
+                        else if (name.Contains('・'))
+                        {
+                            // 露払い・攻め立てなど
+                            var split = name.Split('・');
+                            var baseName = split.First();
+                            var existingRow = rows.FirstOrDefault(x => ((string)x[nameColumn]).StartsWith(baseName)
+                                && (x[inheritWeaponTypeColumn] is not DBNull and not "" || x[inheritMoveTypeColumn] is not DBNull and not ""));
+                            if (existingRow is not null)
+                            {
+                                row[inheritWeaponTypeColumn] = existingRow[inheritWeaponTypeColumn];
+                                row[inheritMoveTypeColumn] = existingRow[inheritMoveTypeColumn];
+                            }
+                        }
+                        else
+                        {
+                            // 「鬼神金剛の掩撃」など
+                            var partName = name
+                                .Replace("攻撃", "")
+                                .Replace("速さ", "")
+                                .Replace("守備", "")
+                                .Replace("魔防", "")
+                                .Replace("鬼神", "")
+                                .Replace("飛燕", "")
+                                .Replace("金剛", "")
+                                .Replace("明鏡", "")
+                                ;
+                            var existingRow = rows.FirstOrDefault(x => ((string)x[nameColumn]).Contains(partName)
+                                && (x[inheritWeaponTypeColumn] is not DBNull and not "" || x[inheritMoveTypeColumn] is not DBNull and not ""));
+                            if (existingRow is not null)
+                            {
+                                row[inheritWeaponTypeColumn] = existingRow[inheritWeaponTypeColumn];
+                                row[inheritMoveTypeColumn] = existingRow[inheritMoveTypeColumn];
+                            }
+
+                        }
+                    }
+
+                    var spColumn = table.EnumerateColumns().First(x => x.ColumnName == "sp");
+                    foreach (var row in rows)
+                    {
+                        if (row[spColumn] is not DBNull and not "") continue;
+                        if (row[typeColumn] is not string typeStr || row[inheritColumn] is not string inheritStr) continue;
+
+                        switch (typeStr)
+                        {
+                            case "武器":
+                                {
+                                    if (inheritStr == "不可")
+                                    {
+                                        row[spColumn] = 400;
+                                    }
+                                    else
+                                    {
+                                        row[spColumn] = 300;
+                                    }
+                                }
+                                break;
+                            case "サポート":
+                                break;
+                            case "奥義":
+                                break;
+                            case "パッシブA":
+                            case "パッシブB":
+                            case "パッシブC":
+                                {
+                                    if (inheritStr == "不可")
+                                    {
+                                        row[spColumn] = 300;
+                                    }
+                                    else
+                                    {
+                                        // ものによるけど大体300なのでとりあえず300にしておく
+                                        row[spColumn] = 300;
+                                    }
+                                }
+                                break;
+                            case "響心":
+                                row[spColumn] = 0;
+                                break;
+                        }
+                    }
+
+                    table.UpdateDirty();
+                }
+                catch (Exception e)
+                {
+                    WriteError(e.Message);
+                }
+            }).AddTo(Disposer);
+
             LoadApplicationSettings();
 
             {
@@ -186,6 +361,8 @@ namespace SqliteEditor
         public ReactiveCommand AddRowCommand { get; } = new ReactiveCommand();
         public ReactiveCommand OpenEditRowWindowCommand { get; } = new ReactiveCommand();
         public ReactiveCommand UpdateCurrentRecordCommand { get; } = new ReactiveCommand();
+
+        public ReactiveCommand AutoSetSkillInheritCommand { get; } = new ReactiveCommand();
 
         public ReactiveCommand OpenInputCsvToolCommand { get; } = new ReactiveCommand();
 
@@ -268,18 +445,25 @@ namespace SqliteEditor
         {
             var path = DatabasePath.Path.Value;
             WriteLog($"変更内容を保存しています..\"{path}\"");
-
-            _ = Task.Run(() =>
+            var dirtyTables = Tables.Where(x => x.IsDirty).ToArray();
+            if (dirtyTables.Length > 0)
             {
-                var dirtyTables = Tables.Where(x => x.IsDirty).ToArray();
-                SqliteUtility.WriteTables(path, dirtyTables.Select(x => x.DataTable));
-                foreach (var table in dirtyTables)
+                _ = Task.Run(() =>
                 {
-                    table.UpdateDirtySource();
-                }
+                    SqliteUtility.WriteTables(path, dirtyTables.Select(x => x.DataTable));
+                    foreach (var table in dirtyTables)
+                    {
+                        WriteLog($"テーブル \"{table.TableName}\" の内容を保存しました。");
+                        table.UpdateDirtySource();
+                    }
 
-                WriteLog($"変更内容を保存しました。\"{path}\"");
-            });
+                    WriteLog($"変更内容を保存しました。\"{path}\"");
+                });
+            }
+            else
+            {
+                WriteLog("変更内容がないので保存をスキップしました。");
+            }
         }
 
         public bool ShowConfirmSavingDialog(Window owner)
