@@ -89,6 +89,29 @@ namespace SqliteEditor
                     selectedTable.Schema);
             }).AddTo(Disposer);
 
+            _ = DuplicateCurrentRecordCommand.Subscribe(() =>
+            {
+                var rowView = SelectedRow.Value;
+                if (rowView is null) return;
+                var selectedTable = SelectedTable.Value;
+                var newRow = selectedTable.DataTable.NewRow();
+                foreach (DataColumn col in selectedTable.DataTable.Columns)
+                {
+                    if (col.ColumnName == "id" && col.DataType == typeof(long))
+                    {
+                        // id列があってlong型なら新しいidを振る
+                        var newId = EstimateNewRowPrimaryKeyValue(selectedTable.DataTable, "id");
+                        newRow["id"] = newId;
+                    }
+                    else
+                    {
+                        newRow[col.ColumnName] = rowView.Row[col];
+                    }
+                }
+                selectedTable.DataTable.Rows.Add(newRow);
+                SqliteUtility.AddRow(DatabasePath.ActualPath.Value, selectedTable.TableName, newRow);
+            }).AddTo(Disposer);
+
             _ = SelectedRow.Subscribe(rowView =>
             {
                 ResetEditPluginViewModel(rowView);
@@ -129,7 +152,8 @@ namespace SqliteEditor
                     var inheritColumn = table.EnumerateColumns().First(x => x.ColumnName == "inherit");
                     var typeColumn = table.EnumerateColumns().First(x => x.ColumnName == "type");
                     var rows = table.EnumerateRows().ToArray();
-                    foreach (var row in rows)
+                    var targetRows = rows.Where(x => x[inheritColumn] is DBNull or "").ToArray();
+                    foreach (var row in targetRows)
                     {
                         if (row[inheritColumn] is not DBNull and not "") continue;
 
@@ -139,7 +163,7 @@ namespace SqliteEditor
                     }
 
                     var mustLearnColumn = table.EnumerateColumns().First(x => x.ColumnName == "must_learn");
-                    foreach (var row in rows)
+                    foreach (var row in targetRows)
                     {
                         if (row[mustLearnColumn] is not DBNull and not "") continue;
 
@@ -165,11 +189,11 @@ namespace SqliteEditor
 
                     var inheritWeaponTypeColumn = table.EnumerateColumns().First(x => x.ColumnName == "inheritable_weapon_type");
                     var inheritMoveTypeColumn = table.EnumerateColumns().First(x => x.ColumnName == "inheritable_move_type");
-                    foreach (var row in rows)
+                    foreach (var row in targetRows)
                     {
                         if (row[inheritColumn] is not "可"
                             || row[typeColumn] is not string typeStr
-                            || !typeStr.Contains("パッシブ")
+                            || (!typeStr.Contains("パッシブ") && !typeStr.Contains("サポート"))
                             || (row[inheritWeaponTypeColumn] is not DBNull and not ""
                                 || row[inheritMoveTypeColumn] is not DBNull and not "")) continue;
 
@@ -188,6 +212,12 @@ namespace SqliteEditor
                                 .Replace("飛燕", "")
                                 .Replace("金剛", "")
                                 .Replace("明鏡", "")
+                                .Replace("攻速", "")
+                                .Replace("攻守", "")
+                                .Replace("攻魔", "")
+                                .Replace("速守", "")
+                                .Replace("速魔", "")
+                                .Replace("守魔", "")
                                 ;
                             var existingRow = rows.FirstOrDefault(x => ((string)x[nameColumn]).Contains(partName)
                                 && (x[inheritWeaponTypeColumn] is not DBNull and not "" || x[inheritMoveTypeColumn] is not DBNull and not ""));
@@ -201,14 +231,31 @@ namespace SqliteEditor
                         {
                             // 露払い・攻め立てなど
                             var split = name.Split('・');
-                            var baseName = split.First();
-                            var existingRow = rows.FirstOrDefault(x => ((string)x[nameColumn]).StartsWith(baseName)
-                                && (x[inheritWeaponTypeColumn] is not DBNull and not "" || x[inheritMoveTypeColumn] is not DBNull and not ""));
+                            var existingRow = rows.FirstOrDefault(x => IsSameKindSkill(x, split, nameColumn, inheritWeaponTypeColumn, inheritMoveTypeColumn));
                             if (existingRow is not null)
                             {
                                 row[inheritWeaponTypeColumn] = existingRow[inheritWeaponTypeColumn];
                                 row[inheritMoveTypeColumn] = existingRow[inheritMoveTypeColumn];
                             }
+
+
+                            static bool IsSameKindSkill(
+                                DataRow x,
+                                string[] split,
+                                DataColumn nameColumn,
+                                DataColumn inheritWeaponTypeColumn,
+                                DataColumn inheritMoveTypeColumn)
+                            {
+                                var baseName = split[0];
+                                var suffix = split[split.Length - 1];
+                                if (!((string)x[nameColumn]).StartsWith(baseName) && !((string)x[nameColumn]).EndsWith(suffix))
+                                {
+                                    return false;
+                                }
+
+                                return (x[inheritWeaponTypeColumn] is not DBNull and not "" || x[inheritMoveTypeColumn] is not DBNull and not "");
+                            }
+
                         }
                         else
                         {
@@ -222,6 +269,12 @@ namespace SqliteEditor
                                 .Replace("飛燕", "")
                                 .Replace("金剛", "")
                                 .Replace("明鏡", "")
+                                .Replace("攻速", "")
+                                .Replace("攻守", "")
+                                .Replace("攻魔", "")
+                                .Replace("速守", "")
+                                .Replace("速魔", "")
+                                .Replace("守魔", "")
                                 ;
                             var existingRow = rows.FirstOrDefault(x => ((string)x[nameColumn]).Contains(partName)
                                 && (x[inheritWeaponTypeColumn] is not DBNull and not "" || x[inheritMoveTypeColumn] is not DBNull and not ""));
@@ -230,12 +283,11 @@ namespace SqliteEditor
                                 row[inheritWeaponTypeColumn] = existingRow[inheritWeaponTypeColumn];
                                 row[inheritMoveTypeColumn] = existingRow[inheritMoveTypeColumn];
                             }
-
                         }
                     }
 
                     var spColumn = table.EnumerateColumns().First(x => x.ColumnName == "sp");
-                    foreach (var row in rows)
+                    foreach (var row in targetRows)
                     {
                         if (row[spColumn] is not DBNull and not "") continue;
                         if (row[typeColumn] is not string typeStr || row[inheritColumn] is not string inheritStr) continue;
@@ -362,6 +414,7 @@ namespace SqliteEditor
         public ReactiveCommand OpenEditRowWindowCommand { get; } = new ReactiveCommand();
         public ReactiveCommand UpdateCurrentRecordCommand { get; } = new ReactiveCommand();
 
+        public ReactiveCommand DuplicateCurrentRecordCommand { get; } = new ReactiveCommand();
         public ReactiveCommand AutoSetSkillInheritCommand { get; } = new ReactiveCommand();
 
         public ReactiveCommand OpenInputCsvToolCommand { get; } = new ReactiveCommand();
@@ -445,6 +498,7 @@ namespace SqliteEditor
         {
             var path = DatabasePath.Path.Value;
             WriteLog($"変更内容を保存しています..\"{path}\"");
+            UpdateSelectedTableDirty();
             var dirtyTables = Tables.Where(x => x.IsDirty).ToArray();
             if (dirtyTables.Length > 0)
             {

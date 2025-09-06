@@ -99,6 +99,58 @@ namespace SqliteEditor.Utilities
             return ReadTable(dbPath, sql);
         }
 
+        public static void CopyValuesForSpecifiedColumn(
+            string sourcePath,
+            string targetPath,
+            string tableName,
+            string columnName,
+            string idColumnName)
+        {
+            var sourceTable = SqliteUtility.ReadTable(sourcePath, $"select * from {tableName}");
+            var targetTable = SqliteUtility.ReadTable(targetPath, $"select * from {tableName}");
+            SqliteUtility.CopyValuesForSpecifiedColumn(
+                sourceTable,
+                targetTable,
+                columnName,
+                idColumnName);
+            SqliteUtility.WriteTable(targetPath, tableName, targetTable);
+        }
+
+        public static void CopyValuesForSpecifiedColumn(
+            DataTable source,
+            DataTable target,
+            string columnName, 
+            string idColumnName)
+        {
+            Dictionary<string, DataRow> targetIdToRowDict = new();
+            foreach (DataRow targetRow in target.Rows)
+            {
+                var key = targetRow[idColumnName]?.ToString();
+                if (string.IsNullOrEmpty(key))
+                {
+                    continue; // IDがnullの場合はスキップ
+                }
+                targetIdToRowDict.Add(key, targetRow);
+            }
+
+            foreach (DataRow sourceRow in source.Rows)
+            {
+                var key = sourceRow[idColumnName]?.ToString();
+                if (string.IsNullOrEmpty(key))
+                {
+                    continue; // IDがnullの場合はスキップ
+                }
+
+                if (!targetIdToRowDict.TryGetValue(key, out DataRow? targetRow))
+                {
+                    continue; // 対応する行が見つからない場合はスキップ
+                }
+
+                var value = sourceRow[columnName];
+                targetRow[columnName] = value;
+            }
+        }
+
         public static DataTable ReadTable(string dbPath, string sql, Action<string, Exception>? errorLogAction = null)
         {
             DataTable table = new();

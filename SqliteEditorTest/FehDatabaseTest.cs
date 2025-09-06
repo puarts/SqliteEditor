@@ -8,8 +8,11 @@ namespace SqliteEditorTest;
 public class FehDatabaseTest
 {
     [TestMethod]
-    public void EstimateInheritance_AnyPattern()
+    [DataRow("UŒ‚‘¬‚³‚Ì•Ÿ‰¹")]
+    [DataRow("U–‚ŒÛ•‘E•±Œƒ")]
+    [DataRow("UŒ‚–‚–h‚ÌŠÅ”j")]
+    public void EstimateInheritance_Passive(string name)
     {
-        FehSkillUtility.EstimateInheritance("UŒ‚‘¬‚³‚Ì•Ÿ‰¹", "ƒpƒbƒVƒuA").Should().BeTrue();
+        FehSkillUtility.EstimateInheritance(name, "ƒpƒbƒVƒuA").Should().BeTrue();
     }
 }

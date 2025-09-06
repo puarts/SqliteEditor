@@ -2,9 +2,11 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqliteEditor.Utilities;
 using SqliteEditorTest.Utilities;
+using System;
 using System.Data;
 using System.Data.SQLite;
 using System.Reflection;
+using System.Windows.Documents;
 
 namespace SqliteEditorTest;
 
@@ -16,6 +18,132 @@ public class SqliteTest
     public SqliteTest()
     {
         _testDbPath = GetTestDatabasePath();
+    }
+
+    [TestMethod]
+    public void Test()
+    {
+        var root = @"F:\trunk\Websites\fire-emblem.fun\images\fe-the-sacred-stones\captures\support";
+        var dbPath = @"F:\trunk\Websites\fire-emblem.fun\db\fe-the-sacred-stones.sqlite3";
+        var table = SqliteUtility.ReadTable(dbPath, $"select * from support");
+        foreach (DataRow row in table.Rows)
+        {
+            var name1 = (string)row["name1"];
+            var name2 = (string)row["name2"];
+            if (string.IsNullOrEmpty(name1) || string.IsNullOrEmpty(name2))
+                continue;
+
+            // アルファベット順で先に来る方を先頭にする
+            string combinedName;
+            if (string.Compare(name1, name2, StringComparison.OrdinalIgnoreCase) <= 0)
+            {
+                combinedName = $"{name1}-{name2}";
+            }
+            else
+            {
+                combinedName = $"{name2}-{name1}";
+            }
+
+            var dirPath = Path.Combine(root, combinedName);
+
+            if (!Directory.Exists(dirPath))
+            {
+                Console.WriteLine(dirPath);
+                _ = Directory.CreateDirectory(dirPath);
+            }
+        }
+    }
+
+
+    [TestMethod]
+    public void CopyValuesForSpecifiedColumnTest()
+    {
+        using var dirCreator = new ScopedDirectoryCreator();
+        var workDir = dirCreator.DirectoryPath;
+        var outputDbPath = Path.Combine(workDir, "output.db");
+        File.Copy(_testDbPath, outputDbPath);
+        File.Exists(outputDbPath).Should().BeTrue();
+
+        string columnName = "type";
+        {
+            var sourceTable = SqliteUtility.ReadTable(_testDbPath, $"select * from heroes");
+
+            foreach (DataRow row in sourceTable.Rows)
+            {
+                row[columnName] = "hoge"; // Set the type column for testing
+                var value = row[columnName];
+                value.Should().Be("hoge");
+            }
+
+            var destTable = SqliteUtility.ReadTable(outputDbPath, $"select * from heroes");
+
+            SqliteUtility.CopyValuesForSpecifiedColumn(sourceTable, destTable, columnName, "name");
+            SqliteUtility.WriteTable(outputDbPath, "heroes", destTable);
+        }
+
+        {
+            var outputTable = SqliteUtility.ReadTable(outputDbPath, "select * from heroes");
+            foreach (DataRow row in outputTable.Rows)
+            {
+                var name = row["name"]?.ToString();
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue; // Skip rows where name is null
+                }
+                var value = row[columnName];
+                value.Should().Be("hoge");
+            }
+        }
+    }
+
+    [TestMethod]
+    public void CopyValuesForSpecifiedColumnTestByFilePath()
+    {
+        using var dirCreator = new ScopedDirectoryCreator();
+        var workDir = dirCreator.DirectoryPath;
+        var sourceDbPath = Path.Combine(workDir, "source.db");
+        var outputDbPath = Path.Combine(workDir, "output2.db");
+        File.Copy(_testDbPath, sourceDbPath);
+        File.Exists(sourceDbPath).Should().BeTrue();
+        File.Copy(_testDbPath, outputDbPath);
+        File.Exists(outputDbPath).Should().BeTrue();
+        string columnName = "type";
+        {
+            var sourceTable = SqliteUtility.ReadTable(sourceDbPath, $"select * from heroes");
+            foreach (DataRow row in sourceTable.Rows)
+            {
+                row[columnName] = "hoge"; // Set the type column for testing
+            }
+
+            SqliteUtility.WriteTable(sourceDbPath, "heroes", sourceTable);
+
+            SqliteUtility.CopyValuesForSpecifiedColumn(
+                sourceDbPath, outputDbPath, "heroes", columnName, "name");
+
+        }
+
+        {
+            var outputTable = SqliteUtility.ReadTable(outputDbPath, "select * from heroes");
+            foreach (DataRow row in outputTable.Rows)
+            {
+                var name = row["name"]?.ToString();
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue; // Skip rows where name is null
+                }
+                var value = row[columnName];
+                value.Should().Be("hoge");
+            }
+        }
+    }
+
+    [TestMethod]
+    public void CopySpecifiedColumn()
+    {
+        string sourceDbPath = @"F:\trunk\Websites\fire-emblem.fun\db\feh-original_heroes_source.sqlite3";
+        string outputDbPath = @"F:\trunk\Websites\fire-emblem.fun\db\feh-original_heroes.sqlite3";
+        SqliteUtility.CopyValuesForSpecifiedColumn(
+            sourceDbPath, outputDbPath, "original_heroes", "self_pronoun", "id");
     }
 
     [TestMethod]

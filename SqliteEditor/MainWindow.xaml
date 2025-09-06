@@ -21,6 +21,8 @@
         <KeyBinding Command="{Binding OverwriteCommand}" Gesture="Ctrl+S" />
         <KeyBinding Command="{Binding AddRowCommand}" Gesture="Ctrl+N" />
         <KeyBinding Command="{Binding OpenEditRowWindowCommand}" Gesture="F4" />
+        <KeyBinding Command="{Binding UpdateCurrentRecordCommand}" Gesture="Ctrl+R" />
+        <KeyBinding Command="{Binding DuplicateCurrentRecordCommand}" Gesture="Ctrl+D" />
     </Window.InputBindings>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
@@ -31,6 +33,7 @@
                 <MenuItem Command="{Binding AddRowCommand}" Header="行の追加(Ctrl+N)" />
                 <MenuItem Command="{Binding OpenEditRowWindowCommand}" Header="現在の行を編集(F4)" />
                 <MenuItem Command="{Binding UpdateCurrentRecordCommand}" Header="現在の行を保存(Ctrl+R)" />
+                <MenuItem Command="{Binding DuplicateCurrentRecordCommand}" Header="現在の行を複製(Ctrl+D)" />
                 <MenuItem Command="{Binding AutoSetSkillInheritCommand}" Header="スキル継承可の自動設定" />
             </MenuItem>
             <MenuItem Header="ツール(T)">

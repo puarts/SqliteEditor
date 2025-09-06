@@ -29,7 +29,14 @@ public class FehSkillUtility
                 skillName.StartsWith("鬼神") |
                 skillName.StartsWith("飛燕") |
                 skillName.StartsWith("金剛") |
-                skillName.StartsWith("明鏡"))
+                skillName.StartsWith("明鏡") |
+                skillName.StartsWith("攻速") |
+                skillName.StartsWith("攻守") |
+                skillName.StartsWith("攻魔") |
+                skillName.StartsWith("速守") |
+                skillName.StartsWith("速魔") |
+                skillName.StartsWith("守魔")
+                )
             {
                 return true;
             }
@@ -37,6 +44,15 @@ public class FehSkillUtility
             {
                 return false;
             }
+        }
+        else if (skillType == "サポート")
+        {
+            if (skillName.EndsWith("・歩法"))
+            {
+                return true;
+            }
+
+            return false;
         }
         else
         {
