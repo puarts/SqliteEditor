@@ -64,6 +64,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Warriors,
         [Display(Name = "無双 風花雪月")]
         WarriorsThreeHopes,
+        [Display(Name = "シャドウズ")]
+        Shadows,
     }
     public enum SexType
     {
@@ -126,6 +128,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         AttunedHero,
         [Display(Name = "お供英雄")]
         AidedHero,
+        [Display(Name = "つながり英雄")]
+        TunagariHero,
         [Display(Name = "特務機関")]
         OrderOfHeroes,
     }
@@ -260,6 +264,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Emblem,
         [Display(Name = "お供")]
         Aided,
+        [Display(Name = "つながり")]
+        Tsunagari,
     }
 
     public enum StatusRevisionType
