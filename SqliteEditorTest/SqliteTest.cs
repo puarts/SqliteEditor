@@ -7,6 +7,8 @@ using System.Data;
 using System.Data.SQLite;
 using System.Reflection;
 using System.Windows.Documents;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SqliteEditorTest;
 
@@ -18,6 +20,64 @@ public class SqliteTest
     public SqliteTest()
     {
         _testDbPath = GetTestDatabasePath();
+    }
+
+    [TestMethod]
+    public void Test2()
+    {
+        var directoryPath = @"F:\trunk\Websites\fire-emblem.fun\images\fe-if\captures\Žx‰‡‰ï˜b";
+
+        if (!Directory.Exists(directoryPath))
+        {
+            Console.WriteLine($"Directory does not exist: {directoryPath}");
+            return;
+        }
+
+        // Pattern: "name1-name2YYYY-MM-DD_hh-mm-ss.mp4"
+        // Capture the leading "name1-name2" part as group 1.
+        var pattern = new Regex(@"^(.+?-.+?)(\d{4}-\d{2}-\d{2}[_ ]\d{2}-\d{2}-\d{2})\.mp4$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        foreach (var filePath in Directory.EnumerateFiles(directoryPath, "*.mp4", SearchOption.TopDirectoryOnly))
+        {
+            var fileName = Path.GetFileName(filePath);
+            if (fileName is null)
+                continue;
+
+            var m = pattern.Match(fileName);
+            if (!m.Success)
+                continue; // not matching the expected pattern
+
+            var folderName = m.Groups[1].Value.Trim();
+            if (string.IsNullOrEmpty(folderName))
+                continue;
+
+            var destDir = Path.Combine(directoryPath, folderName);
+
+            try
+            {
+                // Create directory if it doesn't exist
+                if (!Directory.Exists(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                }
+
+                var destPath = Path.Combine(destDir, fileName);
+
+                // If destination file already exists, skip moving to avoid overwrite
+                if (File.Exists(destPath))
+                {
+                    Console.WriteLine($"Destination already exists, skipping: {destPath}");
+                    continue;
+                }
+
+                File.Move(filePath, destPath);
+                Console.WriteLine($"Moved: {fileName} -> {destDir}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to move file {fileName}: {ex.Message}");
+            }
+        }
     }
 
     [TestMethod]
