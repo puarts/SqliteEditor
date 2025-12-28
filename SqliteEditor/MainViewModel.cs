@@ -109,7 +109,14 @@ namespace SqliteEditor
                     }
                 }
                 selectedTable.DataTable.Rows.Add(newRow);
-                SqliteUtility.AddRow(DatabasePath.ActualPath.Value, selectedTable.TableName, newRow);
+                try
+                {
+                    SqliteUtility.AddRow(DatabasePath.ActualPath.Value, selectedTable.TableName, newRow);
+                }
+                catch (Exception e)
+                {
+                    WriteError($"データベースの変更処理が失敗しました。\n{e.Message}\n{e.StackTrace}");
+                }
             }).AddTo(Disposer);
 
             _ = SelectedRow.Subscribe(rowView =>
@@ -544,12 +551,12 @@ namespace SqliteEditor
             return Tables.Any(x => x.IsDirty);
         }
 
-        private void WriteLog(string message)
+        internal void WriteLog(string message)
         {
             Log.Value += message + "\n";
         }
 
-        private void WriteError(string message)
+        internal void WriteError(string message)
         {
             WriteLog("エラー:" + message);
         }

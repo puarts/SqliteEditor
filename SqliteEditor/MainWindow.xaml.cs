@@ -50,11 +50,18 @@ namespace SqliteEditor
                 var row = ViewModel.SelectedRow.Value;
                 if (tableViewModel is not null && row is not null)
                 {
-                    SqliteUtility.UpdateRecordById(
-                        tableViewModel.DatabasePath,
-                        tableViewModel.TableName,
-                        row.Row,
-                        tableViewModel.Schema);
+                    try
+                    {
+                        SqliteUtility.UpdateRecordById(
+                            tableViewModel.DatabasePath,
+                            tableViewModel.TableName,
+                            row.Row,
+                            tableViewModel.Schema);
+                    }
+                    catch (Exception exception)
+                    {
+                        ViewModel.WriteError($"レコードの更新に失敗しました。\n{exception.Message}\n{exception.StackTrace}");
+                    }
                 }
             }
         }
@@ -106,6 +113,55 @@ namespace SqliteEditor
                         }
                     }
                 }
+            }
+            else if (e.Key == Key.Delete)
+            {
+                // If currently editing a cell, don't treat Delete as "delete row" — let the editing control handle it.
+                if (sender is DataGrid editingGrid && editingGrid?.CurrentCell != null)
+                {
+                    var editingCell = GetCell(editingGrid.CurrentCell);
+                    if (editingCell != null && editingCell.IsEditing)
+                    {
+                        // Do not mark handled; allow editing control (e.g. TextBox) to process Delete
+                        return;
+                    }
+
+                    // Also if keyboard focus is inside an element within the cell (such as a TextBox), allow it to handle Delete
+                    var focused = Keyboard.FocusedElement as DependencyObject;
+                    if (focused != null)
+                    {
+                        // walk up visual tree to see if focus is inside the current cell
+                        DependencyObject? current = focused;
+                        while (current != null)
+                        {
+                            if (current == editingCell)
+                            {
+                                return;
+                            }
+                            current = VisualTreeHelper.GetParent(current);
+                        }
+                    }
+                }
+
+                // DataGrid の既定削除を抑制して、自前の削除ロジックを実行する例
+                e.Handled = true;
+
+                if (sender is not DataGrid dataGrid) return;
+
+                var selectedRows = dataGrid.SelectedItems.Cast<System.Data.DataRowView>().ToArray();
+                if (selectedRows.Length == 0) return;
+
+                var tableVm = ViewModel.GetSelectedTableViewModel();
+                if (tableVm is null) return;
+
+                foreach (var drv in selectedRows)
+                {
+                    // DataTable から行を削除（後で SaveDirtyTables() で永続化される設計に合わせる）
+                    tableVm.DataTable.Rows.Remove(drv.Row);
+                }
+
+                // 差分判定を更新して「変更あり」にする
+                tableVm.UpdateDirty();
             }
         }
 

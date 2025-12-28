@@ -130,6 +130,8 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         AidedHero,
         [Display(Name = "つながり英雄")]
         TunagariHero,
+        [Display(Name = "救世英雄")]
+        ChosenHero,
         [Display(Name = "特務機関")]
         OrderOfHeroes,
     }
@@ -266,6 +268,14 @@ namespace SqliteEditor.Plugins.HeroRowEditPlugins
         Aided,
         [Display(Name = "つながり")]
         Tsunagari,
+        [Display(Name = "救世火")]
+        ChosenFire,
+        [Display(Name = "救世水")]
+        ChosenWater,
+        [Display(Name = "救世風")]
+        ChosenWind,
+        [Display(Name = "救世地")]
+        ChosenEarth,
     }
 
     public enum StatusRevisionType
