@@ -91,31 +91,53 @@ namespace SqliteEditor
 
             _ = DuplicateCurrentRecordCommand.Subscribe(() =>
             {
-                var rowView = SelectedRow.Value;
-                if (rowView is null) return;
                 var selectedTable = SelectedTable.Value;
-                var newRow = selectedTable.DataTable.NewRow();
-                foreach (DataColumn col in selectedTable.DataTable.Columns)
+                if (selectedTable is null) return;
+
+                // Get current selection: prefer SelectedRows (multiple), fall back to SelectedRow (single)
+                var rowViews = SelectedRows.Value?.ToArray();
+                if (rowViews == null || rowViews.Length == 0)
                 {
-                    if (col.ColumnName == "id" && col.DataType == typeof(long))
-                    {
-                        // id列があってlong型なら新しいidを振る
-                        var newId = EstimateNewRowPrimaryKeyValue(selectedTable.DataTable, "id");
-                        newRow["id"] = newId;
-                    }
-                    else
-                    {
-                        newRow[col.ColumnName] = rowView.Row[col];
-                    }
+                    var single = SelectedRow.Value;
+                    if (single is null) return;
+                    rowViews = new[] { single };
                 }
-                selectedTable.DataTable.Rows.Add(newRow);
-                try
+
+                // If there's an "id" long column, compute a starting id to ensure unique ids for all new rows
+                bool hasIdLong = selectedTable.DataTable.Columns.Contains("id") && selectedTable.DataTable.Columns["id"]?.DataType == typeof(long);
+                long nextId = 0;
+                if (hasIdLong)
                 {
-                    SqliteUtility.AddRow(DatabasePath.ActualPath.Value, selectedTable.TableName, newRow);
+                    var existingIds = selectedTable.DataTable.Rows.Cast<DataRow>()
+                        .Where(r => r["id"] is not DBNull)
+                        .Select(r => (long)r["id"]);
+                    nextId = existingIds.Any() ? existingIds.Max() + 1 : 1;
                 }
-                catch (Exception e)
+
+                foreach (var rowView in rowViews)
                 {
-                    WriteError($"データベースの変更処理が失敗しました。\n{e.Message}\n{e.StackTrace}");
+                    var newRow = selectedTable.DataTable.NewRow();
+                    foreach (DataColumn col in selectedTable.DataTable.Columns)
+                    {
+                        if (col.ColumnName == "id" && col.DataType == typeof(long) && hasIdLong)
+                        {
+                            newRow["id"] = nextId;
+                            nextId++;
+                        }
+                        else
+                        {
+                            newRow[col.ColumnName] = rowView.Row[col];
+                        }
+                    }
+                    selectedTable.DataTable.Rows.Add(newRow);
+                    try
+                    {
+                        SqliteUtility.AddRow(DatabasePath.ActualPath.Value, selectedTable.TableName, newRow);
+                    }
+                    catch (Exception e)
+                    {
+                        WriteError($"データベースの変更処理が失敗しました。\n{e.Message}\n{e.StackTrace}");
+                    }
                 }
             }).AddTo(Disposer);
 
@@ -358,7 +380,7 @@ namespace SqliteEditor
                     new("－", "-"),
                     new("~", "～"),
                     new("備ー", "備-"),
-                    new("撃ー", "撃-"),
+                    new("擊ー", "撃-"),
                     new("さー", "さ-"),
                     new("防ー", "防-"),
                     new("Pー", "P-"),
@@ -370,7 +392,7 @@ namespace SqliteEditor
                     new("（", "("),
                     new("）", ")"),
                     new("奥盖", "奥義"),
-                    new("值", "値"),
+                    new("値", "値"),
                     new(",", "、"),
                     new(".", "、"),
                     new("天顔", "天脈"),
@@ -379,6 +401,7 @@ namespace SqliteEditor
                     new("ダメージを%軽減","ダメージを○○%軽減"),
                     new("ダメージ+×", "ダメージ+○×"),
                     new("〇", "○"),
+                    new("·", "・"),
                     new(Environment.NewLine, "<br>"),
                 ];
                 foreach (var info  in defaultInfos)
@@ -410,6 +433,9 @@ namespace SqliteEditor
 
         public ReactiveProperty<int> SelectedTableIndex { get; } = new ReactiveProperty<int>(-1);
         public ReactiveProperty<DataRowView?> SelectedRow { get; } = new ReactiveProperty<DataRowView?>();
+        // Holds multiple selected rows from the UI. When the selection changes in the DataGrid
+        // the code-behind will populate this with all selected DataRowView instances.
+        public ReactiveProperty<IList<System.Data.DataRowView>> SelectedRows { get; } = new ReactiveProperty<IList<System.Data.DataRowView>>(new List<System.Data.DataRowView>());
 
         public ReactiveProperty<string> Log { get; } = new ReactiveProperty<string>();
 

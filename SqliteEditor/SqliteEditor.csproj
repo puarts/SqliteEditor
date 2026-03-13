@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SplashScreen Include="Resources\SplashScreen.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
